@@ -1,0 +1,286 @@
+/* ============================================================
+   PERSON 5 — public/style.css
+   Role: Frontend Styling & Visual Design
+   ============================================================
+   This file controls how EVERY element looks on screen.
+   It applies colours, spacing, fonts, layout (flexbox),
+   hover effects, and responsive adjustments.
+   Every selector here matches an id (#) or class (.) used
+   in index.html (Person 4's file).
+   ============================================================ */
+
+/* ---- LINE 1: Global reset & base font ---- */
+/* Remove default browser margins/padding and set a clean font */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ---- LINE 2: Body background colour ---- */
+body {
+  background-color: #f0f2f5;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* ---- LINE 3: Header bar at the top of the page ---- */
+.app-header {
+  background-color: #2563eb;   /* Blue brand colour */
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;  /* Title left, button right */
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* ---- LINE 4: App name in the header ---- */
+.app-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ---- LINE 5: Main layout — sidebar + task area side by side ---- */
+.app-layout {
+  display: flex;
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+/* ---- LINE 6: Left sidebar panel ---- */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  height: fit-content;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.sidebar-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+/* ---- LINE 7: Category filter list ---- */
+.category-list {
+  list-style: none;
+}
+
+.category-item {
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 4px;
+  transition: background 0.2s, color 0.2s;  /* Smooth hover effect */
+}
+
+/* Active or hovered category gets a blue highlight */
+.category-item:hover,
+.category-item.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* ---- LINE 8: Task section (right panel) ---- */
+.task-section {
+  flex: 1;  /* Grows to fill remaining space */
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 18px;
+}
+
+/* ---- LINE 9: Grid of task cards ---- */
+.task-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ---- LINE 10: Individual task card ---- */
+.task-card {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border-left: 5px solid #2563eb;  /* Coloured accent bar on left */
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Completed tasks get a grey accent and faded text */
+.task-card.completed {
+  border-left-color: #22c55e;
+  opacity: 0.7;
+}
+
+.task-card.completed .task-title {
+  text-decoration: line-through;
+  color: #888;
+}
+
+/* ---- LINE 11: Category-specific border colours ---- */
+.task-card[data-category="Work"]     { border-left-color: #f59e0b; }
+.task-card[data-category="Personal"] { border-left-color: #ec4899; }
+.task-card[data-category="School"]   { border-left-color: #8b5cf6; }
+.task-card[data-category="General"]  { border-left-color: #2563eb; }
+
+/* ---- LINE 12: Task card text elements ---- */
+.task-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #1e293b;
+}
+
+.task-description {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+/* ---- LINE 13: Category badge pill ---- */
+.task-category-badge {
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+/* ---- LINE 14: Action buttons inside each task card ---- */
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ---- LINE 15: Reusable button styles ---- */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.btn-primary   { background: #2563eb; color: white; }
+.btn-secondary { background: #e2e8f0; color: #475569; }
+.btn-success   { background: #22c55e; color: white; font-size: 0.78rem; padding: 6px 12px; }
+.btn-danger    { background: #ef4444; color: white; font-size: 0.78rem; padding: 6px 12px; }
+.btn-edit      { background: #f59e0b; color: white; font-size: 0.78rem; padding: 6px 12px; }
+
+.btn:hover { opacity: 0.88; }
+
+/* ---- LINE 16: Modal overlay (dark background behind pop-up) ---- */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);   /* Semi-transparent dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* ---- LINE 17: The modal pop-up box itself ---- */
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  color: #1e3a5f;
+}
+
+/* ---- LINE 18: Form group (label + input pairs) ---- */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: #2563eb;
+}
+
+/* ---- LINE 19: Form buttons row ---- */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ---- LINE 20: Hide utility class — toggled by JavaScript ---- */
+.hidden {
+  display: none !important;
+}
+
+/* ---- LINE 21: Empty state message when no tasks exist ---- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  grid-column: 1 / -1;
+}
+
+.empty-state p { font-size: 1.1rem; margin-top: 8px; }

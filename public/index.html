@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!-- ============================================================
+  PERSON 4 — public/index.html
+  Role: Frontend HTML Structure (Wireframe Implementation)
+  ============================================================
+  This file defines the entire visual structure of the app.
+  It is the wireframe brought to life — every panel, form,
+  button, and list you see on screen is defined here.
+  CSS (style.css) controls how it LOOKS.
+  JavaScript (app.js) controls how it BEHAVES.
+  ============================================================ -->
+<html lang="en">
+
+<head>
+  <!-- Line 1: Set character encoding — required for special characters -->
+  <meta charset="UTF-8">
+
+  <!-- Line 2: Make the page responsive on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Line 3: The tab title shown in the browser -->
+  <title>TaskMaster</title>
+
+  <!-- Line 4: Link to our stylesheet (Person 5's file) -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <!-- Line 5: Top bar with the app name and a button to add tasks -->
+  <header class="app-header">
+    <h1 class="app-title">TaskMaster</h1>
+    <button id="openModalBtn" class="btn btn-primary">+ Add Task</button>
+  </header>
+
+  <!-- ========== MAIN LAYOUT ========== -->
+  <main class="app-layout">
+
+    <!-- ========== SIDEBAR: Filter by Category ========== -->
+    <!-- Line 6: Left panel — clicking a category filters the task list -->
+    <aside class="sidebar">
+      <h2 class="sidebar-title">Categories</h2>
+      <ul id="categoryList" class="category-list">
+        <!-- Line 7: "All" shows every task regardless of category -->
+        <li class="category-item active" data-category="All">All Tasks</li>
+        <li class="category-item" data-category="Work">Work</li>
+        <li class="category-item" data-category="Personal">Personal</li>
+        <li class="category-item" data-category="School">School</li>
+        <li class="category-item" data-category="General">General</li>
+      </ul>
+    </aside>
+
+    <!-- ========== TASK LIST ========== -->
+    <!-- Line 8: Main content area — tasks are injected here by app.js -->
+    <section class="task-section">
+
+      <!-- Line 9: Heading that updates to show the active category -->
+      <h2 id="sectionTitle" class="section-title">All Tasks</h2>
+
+      <!-- Line 10: Container where task cards will be rendered dynamically -->
+      <div id="taskList" class="task-list">
+        <!-- Tasks are loaded here by JavaScript -->
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ========== ADD / EDIT TASK MODAL ========== -->
+  <!-- Line 11: This pop-up dialog is hidden by default (display: none in CSS) -->
+  <!-- It is shown when the user clicks "+ Add Task" or the edit button -->
+  <div id="taskModal" class="modal hidden">
+    <div class="modal-content">
+
+      <!-- Line 12: Modal title changes between "Add Task" and "Edit Task" -->
+      <h2 id="modalTitle">Add New Task</h2>
+
+      <!-- Line 13: The form — all input fields for a task -->
+      <form id="taskForm">
+
+        <!-- Hidden field — stores the ID of the task being edited -->
+        <input type="hidden" id="taskId">
+
+        <!-- Line 14: Task title — required field -->
+        <div class="form-group">
+          <label for="taskTitle">Title *</label>
+          <input type="text" id="taskTitle" placeholder="Enter task title" required>
+        </div>
+
+        <!-- Line 15: Optional description -->
+        <div class="form-group">
+          <label for="taskDescription">Description</label>
+          <textarea id="taskDescription" rows="3" placeholder="Optional description..."></textarea>
+        </div>
+
+        <!-- Line 16: Category selector — matches the sidebar categories -->
+        <div class="form-group">
+          <label for="taskCategory">Category</label>
+          <select id="taskCategory">
+            <option value="General">General</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="School">School</option>
+          </select>
+        </div>
+
+        <!-- Line 17: Due date picker -->
+        <div class="form-group">
+          <label for="taskDueDate">Due Date</label>
+          <input type="date" id="taskDueDate">
+        </div>
+
+        <!-- Line 18: Form action buttons -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save Task</button>
+          <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== SCRIPT ========== -->
+  <!-- Line 19: Load the frontend JavaScript LAST so HTML is ready first -->
+  <script src="app.js"></script>
+
+</body>
+</html>
