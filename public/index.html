@@ -1,48 +1,52 @@
 <!DOCTYPE html>
-<!-- ============================================================
-  PERSON 4 — public/index.html
-  Role: Frontend HTML Structure (Wireframe Implementation)
-  ============================================================
-  This file defines the entire visual structure of the app.
-  It is the wireframe brought to life — every panel, form,
-  button, and list you see on screen is defined here.
-  CSS (style.css) controls how it LOOKS.
-  JavaScript (app.js) controls how it BEHAVES.
-  ============================================================ -->
+<!--
+  index.html — TaskMaster Frontend Structure
+  ------------------------------------------
+  This file defines the visible structure of the entire app.
+  Think of it as the skeleton: every panel, form, button, and
+  list on screen is declared here.
+
+  style.css  controls how everything LOOKS.
+  app.js     controls how everything BEHAVES.
+-->
 <html lang="en">
 
 <head>
-  <!-- Line 1: Set character encoding — required for special characters -->
   <meta charset="UTF-8">
 
-  <!-- Line 2: Make the page responsive on mobile devices -->
+  <!-- Makes the layout scale correctly on phones and tablets -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Line 3: The tab title shown in the browser -->
   <title>TaskMaster</title>
 
-  <!-- Line 4: Link to our stylesheet (Person 5's file) -->
+  <!-- Link to the stylesheet that handles all visual design -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- ========== HEADER ========== -->
-  <!-- Line 5: Top bar with the app name and a button to add tasks -->
+  <!-- ===================== HEADER ===================== -->
+  <!-- Top bar: shows the app name on the left and the
+       "+ Add Task" button on the right. The button id is used
+       by app.js to attach a click event listener. -->
   <header class="app-header">
     <h1 class="app-title">TaskMaster</h1>
     <button id="openModalBtn" class="btn btn-primary">+ Add Task</button>
   </header>
 
-  <!-- ========== MAIN LAYOUT ========== -->
+
+  <!-- ===================== MAIN LAYOUT ===================== -->
+  <!-- Two-column layout: sidebar on the left, task cards on the right.
+       Flexbox in style.css handles the side-by-side positioning. -->
   <main class="app-layout">
 
-    <!-- ========== SIDEBAR: Filter by Category ========== -->
-    <!-- Line 6: Left panel — clicking a category filters the task list -->
+    <!-- --- SIDEBAR: Category Filter --- -->
+    <!-- Clicking a category item triggers a filter in app.js.
+         The data-category attribute tells the script which category
+         was selected. "active" class highlights the current one. -->
     <aside class="sidebar">
       <h2 class="sidebar-title">Categories</h2>
       <ul id="categoryList" class="category-list">
-        <!-- Line 7: "All" shows every task regardless of category -->
         <li class="category-item active" data-category="All">All Tasks</li>
         <li class="category-item" data-category="Work">Work</li>
         <li class="category-item" data-category="Personal">Personal</li>
@@ -51,49 +55,49 @@
       </ul>
     </aside>
 
-    <!-- ========== TASK LIST ========== -->
-    <!-- Line 8: Main content area — tasks are injected here by app.js -->
+    <!-- --- TASK LIST AREA --- -->
+    <!-- The h2 heading updates when a category is selected.
+         The div#taskList is where app.js injects the task cards. -->
     <section class="task-section">
-
-      <!-- Line 9: Heading that updates to show the active category -->
       <h2 id="sectionTitle" class="section-title">All Tasks</h2>
 
-      <!-- Line 10: Container where task cards will be rendered dynamically -->
       <div id="taskList" class="task-list">
-        <!-- Tasks are loaded here by JavaScript -->
+        <!-- Task cards are generated and inserted here by app.js -->
       </div>
-
     </section>
+
   </main>
 
-  <!-- ========== ADD / EDIT TASK MODAL ========== -->
-  <!-- Line 11: This pop-up dialog is hidden by default (display: none in CSS) -->
-  <!-- It is shown when the user clicks "+ Add Task" or the edit button -->
+
+  <!-- ===================== MODAL (POP-UP FORM) ===================== -->
+  <!-- Hidden by default — app.js removes the "hidden" class to show it.
+       Clicking the dark background (the modal element itself, not the
+       white box) also closes it. -->
   <div id="taskModal" class="modal hidden">
     <div class="modal-content">
 
-      <!-- Line 12: Modal title changes between "Add Task" and "Edit Task" -->
+      <!-- Title changes between "Add New Task" and "Edit Task" -->
       <h2 id="modalTitle">Add New Task</h2>
 
-      <!-- Line 13: The form — all input fields for a task -->
       <form id="taskForm">
 
-        <!-- Hidden field — stores the ID of the task being edited -->
+        <!-- Hidden field: stores the ID of the task being edited.
+             Empty when creating a new task. -->
         <input type="hidden" id="taskId">
 
-        <!-- Line 14: Task title — required field -->
+        <!-- Title is the only required field -->
         <div class="form-group">
           <label for="taskTitle">Title *</label>
           <input type="text" id="taskTitle" placeholder="Enter task title" required>
         </div>
 
-        <!-- Line 15: Optional description -->
+        <!-- Description is optional -->
         <div class="form-group">
           <label for="taskDescription">Description</label>
           <textarea id="taskDescription" rows="3" placeholder="Optional description..."></textarea>
         </div>
 
-        <!-- Line 16: Category selector — matches the sidebar categories -->
+        <!-- Category dropdown — options match the sidebar filter -->
         <div class="form-group">
           <label for="taskCategory">Category</label>
           <select id="taskCategory">
@@ -104,13 +108,13 @@
           </select>
         </div>
 
-        <!-- Line 17: Due date picker -->
+        <!-- Date input — browser renders a native date picker -->
         <div class="form-group">
           <label for="taskDueDate">Due Date</label>
           <input type="date" id="taskDueDate">
         </div>
 
-        <!-- Line 18: Form action buttons -->
+        <!-- Form buttons: Save submits, Cancel closes the modal -->
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Save Task</button>
           <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
@@ -120,8 +124,9 @@
     </div>
   </div>
 
-  <!-- ========== SCRIPT ========== -->
-  <!-- Line 19: Load the frontend JavaScript LAST so HTML is ready first -->
+
+  <!-- Load app.js last so all HTML elements above are ready when
+       the script runs and tries to find them by ID. -->
   <script src="app.js"></script>
 
 </body>

@@ -1,82 +1,153 @@
-// ============================================================
-// PERSON 3 — taskRoutes.js
-// Role: API Routes (Back-End Endpoints)
-// ============================================================
-// This file defines all the API endpoints that the frontend
-// can call to interact with tasks. It acts as the "traffic
-// controller" — it receives HTTP requests, calls the correct
-// database function, and sends back a response.
+// taskRoutes.js
+// ---------------------------------------------------------
+// This file defines all the API endpoints (routes) for tasks.
+// It acts as the "traffic controller" between incoming HTTP
+// requests and the database functions in database.js.
 //
-// REST API design:
-//   GET    /api/tasks        → get all tasks
-//   GET    /api/tasks/:id    → get one task
-//   POST   /api/tasks        → create a new task
-//   PUT    /api/tasks/:id    → update a task
-//   DELETE /api/tasks/:id    → delete a task
-// ============================================================
+// REST API endpoints provided here:
+//   GET    /api/tasks              -> return all tasks
+//   GET    /api/tasks/filter       -> return tasks by category
+//   GET    /api/tasks/:id          -> return one task
+//   POST   /api/tasks              -> create a new task
+//   PUT    /api/tasks/:id          -> update an existing task
+//   DELETE /api/tasks/:id          -> delete a task
+// ---------------------------------------------------------
 
-// Line 1: Import express and create a Router instance
-// A Router is a mini Express app — handles its own routes
 const express = require('express');
-const router = express.Router();
+const router  = express.Router();
+const db      = require('./database');
 
-// Line 2: Import the database module (Person 2's file)
-const db = require('./database');
 
-// ---- ROUTE 1: GET all tasks ----
-// Line 3–7: Handles GET /api/tasks
-// Fetches all tasks from the database and returns them as JSON
+// ---------------------------------------------------------
+// HELPER: validate that required fields are present
+// Returns an array of error strings. Empty array = all good.
+// ---------------------------------------------------------
+function validateTask(body) {
+  const errors = [];
+
+  if (!body.title || body.title.trim() === '') {
+    errors.push('Title is required and cannot be blank');
+  }
+
+  const allowed = ['General', 'Work', 'Personal', 'School'];
+  if (body.category && !allowed.includes(body.category)) {
+    errors.push(`Category must be one of: ${allowed.join(', ')}`);
+  }
+
+  if (body.dueDate && isNaN(Date.parse(body.dueDate))) {
+    errors.push('Due date must be a valid date (e.g. 2025-12-31)');
+  }
+
+  return errors;
+}
+
+
+// ---------------------------------------------------------
+// GET /api/tasks
+// Returns every task, newest first.
+// ---------------------------------------------------------
 router.get('/', (req, res) => {
-  const tasks = db.getAllTasks();
-  res.json(tasks);
+  try {
+    const tasks = db.getAllTasks();
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load tasks', detail: err.message });
+  }
 });
 
-// ---- ROUTE 2: GET a single task ----
-// Line 8–13: Handles GET /api/tasks/:id
-// :id is a URL parameter — e.g. /api/tasks/1234567890
-// Returns 404 if the task doesn't exist
+
+// ---------------------------------------------------------
+// GET /api/tasks/filter?category=Work
+// Returns only the tasks that belong to a given category.
+// The category comes from the query string, e.g. ?category=Work
+// Note: this route must be declared BEFORE /:id so Express
+// doesn't try to treat "filter" as a task ID.
+// ---------------------------------------------------------
+router.get('/filter', (req, res) => {
+  const { category } = req.query;
+
+  if (!category) {
+    return res.status(400).json({ error: 'Please provide a category query param, e.g. ?category=Work' });
+  }
+
+  try {
+    const tasks = db.getTasksByCategory(category);
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: 'Filter failed', detail: err.message });
+  }
+});
+
+
+// ---------------------------------------------------------
+// GET /api/tasks/:id
+// Returns a single task by its ID.
+// Sends 404 if the ID doesn't match any stored task.
+// ---------------------------------------------------------
 router.get('/:id', (req, res) => {
   const task = db.getTaskById(req.params.id);
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+
+  if (!task) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
+
   res.json(task);
 });
 
-// ---- ROUTE 3: POST create a new task ----
-// Line 14–22: Handles POST /api/tasks
-// Reads task data from req.body (the JSON body of the request)
-// Title is required — returns 400 Bad Request if missing
-// Returns 201 Created with the new task on success
+
+// ---------------------------------------------------------
+// POST /api/tasks
+// Creates a new task from the JSON body of the request.
+// Returns 400 if validation fails, 201 with the new task on success.
+// ---------------------------------------------------------
 router.post('/', (req, res) => {
-  const { title, description, category, dueDate } = req.body;
-  if (!title) {
-    return res.status(400).json({ error: 'Title is required' });
+  const errors = validateTask(req.body);
+
+  if (errors.length > 0) {
+    return res.status(400).json({ error: 'Validation failed', details: errors });
   }
-  const newTask = db.createTask({ title, description, category, dueDate });
-  res.status(201).json(newTask);
+
+  try {
+    const { title, description, category, dueDate } = req.body;
+    const newTask = db.createTask({ title, description, category, dueDate });
+    res.status(201).json(newTask);
+  } catch (err) {
+    res.status(500).json({ error: 'Could not create task', detail: err.message });
+  }
 });
 
-// ---- ROUTE 4: PUT update an existing task ----
-// Line 23–29: Handles PUT /api/tasks/:id
-// Accepts any updated fields in req.body (e.g. completed: true)
-// Returns the updated task, or 404 if not found
+
+// ---------------------------------------------------------
+// PUT /api/tasks/:id
+// Updates an existing task. Only the fields sent in the body
+// are changed — everything else stays the same.
+// ---------------------------------------------------------
 router.put('/:id', (req, res) => {
   const updated = db.updateTask(req.params.id, req.body);
+
   if (!updated) {
-    return res.status(404).json({ error: 'Task not found' });
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
+
   res.json(updated);
 });
 
-// ---- ROUTE 5: DELETE a task ----
-// Line 30–37: Handles DELETE /api/tasks/:id
-// Returns a success message, or 404 if not found
+
+// ---------------------------------------------------------
+// DELETE /api/tasks/:id
+// Permanently removes a task. Returns 404 if not found,
+// or a success message if the deletion worked.
+// ---------------------------------------------------------
 router.delete('/:id', (req, res) => {
   const deleted = db.deleteTask(req.params.id);
+
   if (!deleted) {
-    return res.status(404).json({ error: 'Task not found' });
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
-  res.json({ message: 'Task deleted successfully' });
+
+  res.json({ message: 'Task deleted successfully', id: req.params.id });
 });
 
-// Line 38: Export the router so server.js can mount it
+
+// Export the router so server.js can mount it at /api/tasks
 module.exports = router;

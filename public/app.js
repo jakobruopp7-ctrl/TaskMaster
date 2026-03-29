@@ -1,18 +1,19 @@
-// ============================================================
-// PERSON 6 — public/app.js
-// Role: Frontend JavaScript (Browser-Side Logic)
-// ============================================================
-// This file runs INSIDE the browser (not on the server).
-// It fetches tasks from the API, builds the task cards in the
-// HTML, handles all button clicks, form submissions, and
-// category filtering.
-// ============================================================
+// app.js — TaskMaster Frontend Logic
+// ---------------------------------------------------------
+// Runs inside the browser. Handles:
+//   - Fetching tasks from the API and displaying them as cards
+//   - Opening/closing the modal form for adding and editing
+//   - Sending create, update, and delete requests to the API
+//   - Filtering tasks when the user clicks a sidebar category
+// ---------------------------------------------------------
 
-// ---- LINE 1: State variable — which category is currently selected ----
+
+// --- STATE & ELEMENT REFERENCES ---
+
+// Tracks which category is active. "All" means show everything.
 let activeCategory = 'All';
 
-// ---- LINE 2: Grab references to important HTML elements ----
-// These correspond to the id attributes set in index.html (Person 4)
+// Cache DOM references — avoids searching the page repeatedly.
 const taskList      = document.getElementById('taskList');
 const taskModal     = document.getElementById('taskModal');
 const taskForm      = document.getElementById('taskForm');
@@ -22,50 +23,43 @@ const cancelBtn     = document.getElementById('cancelBtn');
 const sectionTitle  = document.getElementById('sectionTitle');
 const categoryItems = document.querySelectorAll('.category-item');
 
-// ---- LINE 3: Form input fields ----
+// Form input fields
 const taskIdInput          = document.getElementById('taskId');
 const taskTitleInput       = document.getElementById('taskTitle');
 const taskDescriptionInput = document.getElementById('taskDescription');
 const taskCategoryInput    = document.getElementById('taskCategory');
 const taskDueDateInput     = document.getElementById('taskDueDate');
 
-// ============================================================
-// SECTION A: FETCHING AND DISPLAYING TASKS
-// ============================================================
 
-// Line 4–18: loadTasks() — fetches all tasks from the API and renders them
-// 'async' means this function can use 'await' to wait for the API response
+// --- SECTION A: LOADING & RENDERING TASKS ---
+
+// Fetch all tasks from the API, apply the active category filter,
+// and pass the result to renderTasks() to build the card HTML.
 async function loadTasks() {
   try {
-    // Fetch all tasks from our Node.js API (Person 3's route)
     const response = await fetch('/api/tasks');
-    const tasks = await response.json();  // Parse JSON response
-
-    // Filter to only show tasks in the active category
+    const tasks    = await response.json();
     const filtered = activeCategory === 'All'
       ? tasks
       : tasks.filter(task => task.category === activeCategory);
-
-    // Render the filtered tasks in the HTML
     renderTasks(filtered);
-  } catch (error) {
-    console.error('Error loading tasks:', error);
+  } catch (err) {
+    console.error('Failed to load tasks:', err);
   }
 }
 
-// Line 19–43: renderTasks() — builds and injects HTML task cards into the page
+// Build and inject HTML task cards into the page.
+// Shows a friendly message if there are no tasks to display.
 function renderTasks(tasks) {
-  // If no tasks match the filter, show a friendly empty message
   if (tasks.length === 0) {
     taskList.innerHTML = `
       <div class="empty-state">
         <p>No tasks here yet. Click "+ Add Task" to get started!</p>
-      </div>
-    `;
+      </div>`;
     return;
   }
 
-  // Build an HTML string for all task cards and inject it at once
+  // Map each task to an HTML string and join them into one block.
   taskList.innerHTML = tasks.map(task => `
     <div class="task-card ${task.completed ? 'completed' : ''}" data-category="${task.category}">
       <div class="task-title">${task.title}</div>
@@ -89,22 +83,21 @@ function renderTasks(tasks) {
   `).join('');
 }
 
-// ============================================================
-// SECTION B: MODAL (POP-UP) CONTROL
-// ============================================================
 
-// Line 44–50: openAddModal() — opens the modal form for a NEW task
+// --- SECTION B: MODAL CONTROL ---
+
+// Open the modal with a blank form for creating a new task.
 function openAddModal() {
   modalTitle.textContent = 'Add New Task';
-  taskForm.reset();          // Clear any previous values
-  taskIdInput.value = '';    // No existing ID — this is a new task
+  taskForm.reset();
+  taskIdInput.value = ''; // Empty ID signals a POST (create) request
   taskModal.classList.remove('hidden');
 }
 
-// Line 51–61: openEditModal() — opens the modal pre-filled for editing
-// 'task' is the task object from the card's onclick attribute
+// Open the modal pre-filled with an existing task's data.
+// 'task' is the full object, passed via the card's onclick attribute.
 function openEditModal(task) {
-  modalTitle.textContent = 'Edit Task';
+  modalTitle.textContent     = 'Edit Task';
   taskIdInput.value          = task.id;
   taskTitleInput.value       = task.title;
   taskDescriptionInput.value = task.description || '';
@@ -113,114 +106,103 @@ function openEditModal(task) {
   taskModal.classList.remove('hidden');
 }
 
-// Line 62–65: closeModal() — hides the modal and resets the form
+// Hide the modal and clear all form fields.
 function closeModal() {
   taskModal.classList.add('hidden');
   taskForm.reset();
 }
 
-// ============================================================
-// SECTION C: CRUD OPERATIONS (API CALLS)
-// ============================================================
 
-// Line 66–90: Form submission — handles both CREATE and UPDATE
+// --- SECTION C: API OPERATIONS ---
+
+// Handles both CREATE and UPDATE on form submit.
+// If taskIdInput has a value, we're editing — otherwise creating.
 taskForm.addEventListener('submit', async (event) => {
-  event.preventDefault();  // Stop the browser from reloading the page
+  event.preventDefault(); // Prevent the default browser page reload
 
-  // Build the task data object from form values
   const taskData = {
     title:       taskTitleInput.value,
     description: taskDescriptionInput.value,
     category:    taskCategoryInput.value,
     dueDate:     taskDueDateInput.value || null,
   };
-
   const id = taskIdInput.value;
 
   try {
     if (id) {
-      // ID exists → UPDATE an existing task (PUT request)
+      // ID present → update existing task via PUT
       await fetch(`/api/tasks/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData),
       });
     } else {
-      // No ID → CREATE a new task (POST request)
+      // No ID → create new task via POST
       await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData),
       });
     }
     closeModal();
-    loadTasks();  // Refresh the list to show the change
-  } catch (error) {
-    console.error('Error saving task:', error);
+    loadTasks(); // Refresh cards so the change shows immediately
+  } catch (err) {
+    console.error('Failed to save task:', err);
   }
 });
 
-// Line 91–101: toggleComplete() — marks a task done or undone
+// Flip a task's completed status and reload the list.
 async function toggleComplete(id, currentStatus) {
   try {
     await fetch(`/api/tasks/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ completed: !currentStatus }),
     });
-    loadTasks();  // Refresh to reflect new status
-  } catch (error) {
-    console.error('Error updating task:', error);
+    loadTasks();
+  } catch (err) {
+    console.error('Failed to update task:', err);
   }
 }
 
-// Line 102–113: deleteTask() — sends a DELETE request to remove a task
+// Ask for confirmation, then send a DELETE request to remove the task.
 async function deleteTask(id) {
   if (!confirm('Are you sure you want to delete this task?')) return;
   try {
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
     loadTasks();
-  } catch (error) {
-    console.error('Error deleting task:', error);
+  } catch (err) {
+    console.error('Failed to delete task:', err);
   }
 }
 
-// ============================================================
-// SECTION D: CATEGORY FILTERING
-// ============================================================
 
-// Line 114–126: Add click listener to each category item in the sidebar
+// --- SECTION D: CATEGORY FILTER ---
+
+// Each sidebar item gets a click listener.
+// Clicking one updates activeCategory and reloads the task list.
 categoryItems.forEach(item => {
   item.addEventListener('click', () => {
-    // Remove 'active' class from all items
     categoryItems.forEach(i => i.classList.remove('active'));
-    // Add 'active' class to the clicked item
     item.classList.add('active');
-    // Update the active category and section title
     activeCategory = item.dataset.category;
-    sectionTitle.textContent = activeCategory === 'All' ? 'All Tasks' : activeCategory + ' Tasks';
-    loadTasks();  // Reload with new filter
+    sectionTitle.textContent = activeCategory === 'All'
+      ? 'All Tasks'
+      : activeCategory + ' Tasks';
+    loadTasks();
   });
 });
 
-// ============================================================
-// SECTION E: EVENT LISTENERS FOR MODAL BUTTONS
-// ============================================================
 
-// Line 127: Open modal when "+ Add Task" button is clicked
+// --- SECTION E: EVENT LISTENERS ---
+
 openModalBtn.addEventListener('click', openAddModal);
-
-// Line 128: Close modal when "Cancel" button is clicked
 cancelBtn.addEventListener('click', closeModal);
 
-// Line 129: Close modal when clicking outside the white modal box
+// Close the modal when clicking the dark overlay (not the form itself)
 taskModal.addEventListener('click', (event) => {
   if (event.target === taskModal) closeModal();
 });
 
-// ============================================================
-// SECTION F: INITIAL LOAD
-// ============================================================
 
-// Line 130: When the page first loads, fetch and display all tasks
+// --- INITIAL LOAD ---
+
+// Fetch and display all tasks as soon as the page is ready.
 loadTasks();

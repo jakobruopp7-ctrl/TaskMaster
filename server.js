@@ -1,52 +1,116 @@
-// ============================================================
-// PERSON 1 — server.js
-// Role: Project Setup & Express Server
-// ============================================================
-// This file is the ENTRY POINT of the entire application.
-// It sets up the Express web server, loads middleware,
-// connects the API routes, and starts listening on a port.
-// ============================================================
+// server.js
+// ---------------------------------------------------------
+// This is the main entry point for the TaskMaster application.
+// Its job is to create the Express server, set up all the
+// middleware that processes incoming requests, register the
+// API routes, and finally start listening on a port.
+//
+// Run the server with:  node server.js
+// Then open:            http://localhost:3000
+// ---------------------------------------------------------
 
-// Line 1: Import the 'express' library (installed via npm)
 const express = require('express');
-
-// Line 2: Import Node.js built-in 'path' module (no install needed)
-// Used to safely build file paths across different operating systems
-const path = require('path');
-
-// Line 3: Import our custom task routes file (Person 3's file)
+const path    = require('path');
 const taskRoutes = require('./taskRoutes');
 
-// Line 4: Create the Express application instance
 const app = express();
 
-// Line 5: Define which port the server will listen on
-const PORT = 3000;
+// Pull the port from an environment variable if one is set,
+// otherwise just use 3000. This makes it easy to deploy the
+// app to hosting platforms without changing the code.
+const PORT = process.env.PORT || 3000;
 
-// ---- MIDDLEWARE SETUP ----
-// Middleware runs on every request BEFORE it reaches the routes
 
-// Line 6: Allow the server to read JSON data from request bodies
-// (e.g. when the frontend sends a new task as JSON)
+// ---------------------------------------------------------
+// MIDDLEWARE
+//
+// Middleware are functions that run on every incoming request
+// before it reaches a route handler. They are stacked in order,
+// so the first one registered runs first.
+// ---------------------------------------------------------
+
+// Allow the server to read JSON data from request bodies.
+// Without this, req.body would be undefined when the frontend
+// sends task data as JSON.
 app.use(express.json());
 
-// Line 7: Allow the server to read URL-encoded form data
+// Also handle URL-encoded data (the format standard HTML forms use).
+// extended: true allows nested objects in the form data.
 app.use(express.urlencoded({ extended: true }));
 
-// Line 8: Serve static files (HTML, CSS, JS) from the 'public' folder
-// When a browser visits http://localhost:3000, it gets index.html from public/
+// Serve everything in the /public folder as static files.
+// When someone visits http://localhost:3000, Express automatically
+// sends them index.html from the public folder.
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---- ROUTES ----
+// Custom logger — prints the HTTP method, URL, and time for
+// every request that comes in. Really helpful for debugging.
+app.use((req, res, next) => {
+  const time = new Date().toLocaleTimeString();
+  console.log(`[${time}]  ${req.method}  ${req.url}`);
+  next(); // Pass control to the next middleware or route
+});
 
-// Line 9: Mount the task routes at the /api/tasks path
-// Any request to /api/tasks/... will be handled by taskRoutes.js
+
+// ---------------------------------------------------------
+// ROUTES
+// ---------------------------------------------------------
+
+// Health check endpoint — a quick way to confirm the server
+// is up and running without loading the full app.
+// Try visiting http://localhost:3000/api/health in your browser.
+app.get('/api/health', (req, res) => {
+  res.json({
+    status:    'ok',
+    uptime:    process.uptime().toFixed(2) + 's',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Mount all task-related routes at /api/tasks.
+// Any request starting with /api/tasks gets forwarded to taskRoutes.js,
+// which decides exactly what to do based on the method and sub-path.
 app.use('/api/tasks', taskRoutes);
 
-// ---- START THE SERVER ----
 
-// Line 10: Tell the server to start listening for incoming requests
-// The callback function runs once the server is ready
+// ---------------------------------------------------------
+// ERROR HANDLERS
+//
+// These must be registered AFTER all routes. Express works
+// top-to-bottom, so requests fall through to these only if
+// no route above matched them.
+// ---------------------------------------------------------
+
+// 404 handler — catches requests for URLs that don't exist.
+// Sends a clean JSON response instead of Express's default HTML error page.
+app.use((req, res) => {
+  res.status(404).json({
+    error:   'Not found',
+    message: `No route matches ${req.method} ${req.url}`
+  });
+});
+
+// Global error handler — catches any unexpected errors thrown inside
+// a route. Express recognises error handlers by their four-parameter
+// signature (err, req, res, next).
+app.use((err, req, res, next) => {
+  console.error(`[ERROR]  ${err.message}`);
+  res.status(500).json({
+    error:   'Internal server error',
+    message: err.message
+  });
+});
+
+
+// ---------------------------------------------------------
+// START THE SERVER
+// ---------------------------------------------------------
+
 app.listen(PORT, () => {
-  console.log(`TaskMaster is running! Open your browser at: http://localhost:${PORT}`);
+  console.log('\n----------------------------------------------');
+  console.log(`  TaskMaster is running`);
+  console.log(`  App:    http://localhost:${PORT}`);
+  console.log(`  Health: http://localhost:${PORT}/api/health`);
+  console.log(`  Stop:   Ctrl+C`);
+  console.log('----------------------------------------------\n');
 });
