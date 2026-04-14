@@ -5,6 +5,7 @@
 //
 // REST API Endpunkte:
 //   GET    /api/tasks           → alle Tasks zurückgeben      (Person 4 - Claire)
+//   GET    /api/tasks/stats     → Erledigungsstatistik        (Person 5 - Rike)
 //   GET    /api/tasks/search    → Tasks nach Begriff suchen   (Person 3 - Melina)
 //   GET    /api/tasks/:id       → einen Task zurückgeben      (Person 4 - Claire)
 //   POST   /api/tasks           → neuen Task erstellen        (Person 3 - Melina)
@@ -23,6 +24,38 @@ const db      = require('./database');
 // GET alle Tasks
 router.get('/', (req, res) => {
   res.json(db.getAllTasks());
+});
+
+// -------------------------------------------------------
+// PERSON 5 (Rike) -- GET /stats
+// NOTE: declared BEFORE /:id — otherwise Express treats
+// "stats" as a task ID and this route never works.
+// -------------------------------------------------------
+
+// GET /api/tasks/stats
+// Returns total, completed, and pending task counts
+// Also breaks down completed count per category
+router.get('/stats', (req, res) => {
+  const tasks     = db.getAllTasks();
+  const completed = tasks.filter(t => t.completed);
+  const pending   = tasks.filter(t => !t.completed);
+
+  // Count completed tasks per category
+  const byCategory = {};
+  tasks.forEach(task => {
+    if (!byCategory[task.category]) {
+      byCategory[task.category] = { total: 0, completed: 0 };
+    }
+    byCategory[task.category].total++;
+    if (task.completed) byCategory[task.category].completed++;
+  });
+
+  res.json({
+    total:     tasks.length,
+    completed: completed.length,
+    pending:   pending.length,
+    byCategory
+  });
 });
 
 // -------------------------------------------------------
