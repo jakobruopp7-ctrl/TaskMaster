@@ -26,7 +26,7 @@ const categoryItems = document.querySelectorAll('.category-item');
 // Formularfelder
 const taskIdInput       = document.getElementById('taskId');
 const taskTitleInput    = document.getElementById('taskTitle');
-const taskDescInput     = document.getElementById('taskDescription'); // PERSON 5 (Rike) nutzt dieses Feld
+const taskDescInput     = document.getElementById('taskDescription'); // genutzt von Rike (Edit-Modal) und Melina (POST)
 const taskCategoryInput = document.getElementById('taskCategory');
 const taskDueDateInput  = document.getElementById('taskDueDate');
 const searchInput       = document.getElementById('searchInput');
@@ -68,7 +68,7 @@ clearSearchBtn.addEventListener('click', () => {
 });
 
 // ---------------------------------------------------------
-// PERSON 5 (Rike) -- Stats laden & anzeigen
+// PERSON 4 (Claire) -- Stats laden & anzeigen
 // ---------------------------------------------------------
 
 // Fetch completion stats from GET /api/tasks/stats and update the stats bar
@@ -90,7 +90,7 @@ async function loadStats() {
 }
 
 // ---------------------------------------------------------
-// PERSON 4 (Claire) -- Tasks laden & anzeigen
+// PERSON 4 (Claire) -- Tasks laden
 // ---------------------------------------------------------
 
 // Alle Tasks vom Server laden, filtern und als Cards rendern
@@ -105,6 +105,10 @@ async function loadTasks() {
   renderTasks(filtered);
   loadStats(); // Always refresh the stats bar after loading tasks
 }
+
+// ---------------------------------------------------------
+// PERSON 6 (Nessi) -- Tasks rendern
+// ---------------------------------------------------------
 
 // HTML-Task-Cards bauen und in die Seite einfügen
 function renderTasks(tasks) {
@@ -142,7 +146,7 @@ function renderTasks(tasks) {
 
 
 // ---------------------------------------------------------
-// PERSON 3 (Melina) -- Modal öffnen (neuen Task erstellen)
+// PERSON 1 (Jakob) -- Modal öffnen & schließen
 // ---------------------------------------------------------
 
 // Modal mit leerem Formular für einen neuen Task öffnen
@@ -217,7 +221,7 @@ taskForm.addEventListener('submit', async (e) => {
 
 
 // ---------------------------------------------------------
-// PERSON 6 (Nessi) -- Task löschen & abschließen
+// PERSON 6 (Nessi) -- Task löschen, abschließen & Kategorie-Filter
 // ---------------------------------------------------------
 
 // Erledigungsstatus eines Tasks umschalten (PUT)
@@ -238,9 +242,7 @@ async function deleteTask(id) {
 }
 
 
-// --- KATEGORIE-FILTER ---
-
-// Klick-Listener an jedes Kategorie-Element hängen
+// Kategorie-Filter — Klick-Listener an jedes Kategorie-Element hängen
 categoryItems.forEach(item => {
   item.addEventListener('click', () => {
     categoryItems.forEach(i => i.classList.remove('active'));
@@ -256,7 +258,9 @@ categoryItems.forEach(item => {
 });
 
 
-// --- EVENT LISTENER ---
+// ---------------------------------------------------------
+// PERSON 1 (Jakob) -- Event Listener & App-Start
+// ---------------------------------------------------------
 
 openModalBtn.addEventListener('click', openAddModal);
 cancelBtn.addEventListener('click', closeModal);
@@ -265,9 +269,6 @@ cancelBtn.addEventListener('click', closeModal);
 taskModal.addEventListener('click', (event) => {
   if (event.target === taskModal) closeModal();
 });
-
-
-// --- ERSTMALIGES LADEN ---
 
 // Tasks und Stats sofort laden wenn die Seite bereit ist
 loadTasks();

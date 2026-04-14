@@ -5,7 +5,7 @@
 //
 // REST API Endpunkte:
 //   GET    /api/tasks           → alle Tasks zurückgeben      (Person 4 - Claire)
-//   GET    /api/tasks/stats     → Erledigungsstatistik        (Person 5 - Rike)
+//   GET    /api/tasks/stats     → Erledigungsstatistik        (Person 4 - Claire)
 //   GET    /api/tasks/search    → Tasks nach Begriff suchen   (Person 3 - Melina)
 //   GET    /api/tasks/:id       → einen Task zurückgeben      (Person 4 - Claire)
 //   POST   /api/tasks           → neuen Task erstellen        (Person 3 - Melina)
@@ -18,7 +18,10 @@ const router  = express.Router();
 const db      = require('./database');
 
 // -------------------------------------------------------
-// PERSON 4 (Claire) -- GET-Routen
+// PERSON 4 (Claire) -- GET-Routen (alle Tasks, stats, nach ID)
+// NOTE: /stats and /search must be declared BEFORE /:id —
+// otherwise Express treats them as task IDs and the routes
+// never work.
 // -------------------------------------------------------
 
 // GET alle Tasks
@@ -27,10 +30,7 @@ router.get('/', (req, res) => {
 });
 
 // -------------------------------------------------------
-// PERSON 5 (Rike) -- GET /stats
-// NOTE: declared BEFORE /:id — otherwise Express treats
-// "stats" as a task ID and this route never works.
-// -------------------------------------------------------
+// PERSON 4 (Claire) -- GET /stats (continued)
 
 // GET /api/tasks/stats
 // Returns total, completed, and pending task counts
@@ -82,6 +82,11 @@ router.get('/search', (req, res) => {
     res.status(500).json({ error: 'Search failed', detail: err.message });
   }
 });
+
+// -------------------------------------------------------
+// PERSON 4 (Claire) -- GET /:id (continued)
+// NOTE: must be declared AFTER /stats and /search
+// -------------------------------------------------------
 
 // GET einen Task nach ID
 router.get('/:id', (req, res) => {
