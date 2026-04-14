@@ -106,6 +106,27 @@ body {
   margin-bottom: 12px;
 }
 
+/* Search bar */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+  border-color: #2563eb;
+}
+
 /* Stats bar showing completed / total tasks */
 .stats-bar {
   background: #eff6ff;

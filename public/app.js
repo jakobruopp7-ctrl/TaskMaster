@@ -29,7 +29,43 @@ const taskTitleInput    = document.getElementById('taskTitle');
 const taskDescInput     = document.getElementById('taskDescription'); // PERSON 5 (Rike) nutzt dieses Feld
 const taskCategoryInput = document.getElementById('taskCategory');
 const taskDueDateInput  = document.getElementById('taskDueDate');
+const searchInput       = document.getElementById('searchInput');
+const clearSearchBtn    = document.getElementById('clearSearchBtn');
 
+
+// ---------------------------------------------------------
+// PERSON 3 (Melina) -- Search
+// ---------------------------------------------------------
+
+// Listen for typing in the search bar
+searchInput.addEventListener('input', async () => {
+  const q = searchInput.value.trim();
+
+  if (q === '') {
+    // Empty search — go back to normal task list
+    clearSearchBtn.classList.add('hidden');
+    loadTasks();
+    return;
+  }
+
+  // Show the Clear button while searching
+  clearSearchBtn.classList.remove('hidden');
+
+  // Fetch search results from GET /api/tasks/search?q=...
+  const response = await fetch(`/api/tasks/search?q=${encodeURIComponent(q)}`);
+  const results  = await response.json();
+
+  sectionTitle.textContent = `Search results for "${q}"`;
+  renderTasks(results);
+});
+
+// Clear button resets the search
+clearSearchBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearSearchBtn.classList.add('hidden');
+  sectionTitle.textContent = activeCategory === 'All' ? 'All Tasks' : activeCategory + ' Tasks';
+  loadTasks();
+});
 
 // ---------------------------------------------------------
 // PERSON 5 (Rike) -- Stats laden & anzeigen
