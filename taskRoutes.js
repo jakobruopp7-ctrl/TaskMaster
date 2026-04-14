@@ -4,11 +4,12 @@
 // zwischen HTTP-Anfragen und den Datenbankfunktionen.
 //
 // REST API Endpunkte:
-//   GET    /api/tasks        → alle Tasks zurückgeben      (Person 4 - Claire)
-//   GET    /api/tasks/:id    → einen Task zurückgeben      (Person 4 - Claire)
-//   POST   /api/tasks        → neuen Task erstellen        (Person 3 - Melina)
-//   PUT    /api/tasks/:id    → Task aktualisieren          (Person 5 - Rike)
-//   DELETE /api/tasks/:id    → Task löschen               (Person 6 - Nessi)
+//   GET    /api/tasks           → alle Tasks zurückgeben      (Person 4 - Claire)
+//   GET    /api/tasks/search    → Tasks nach Begriff suchen   (Person 3 - Melina)
+//   GET    /api/tasks/:id       → einen Task zurückgeben      (Person 4 - Claire)
+//   POST   /api/tasks           → neuen Task erstellen        (Person 3 - Melina)
+//   PUT    /api/tasks/:id       → Task aktualisieren          (Person 5 - Rike)
+//   DELETE /api/tasks/:id       → Task löschen                (Person 6 - Nessi)
 // ---------------------------------------------------------
 
 const express = require('express');
@@ -22,6 +23,31 @@ const db      = require('./database');
 // GET alle Tasks
 router.get('/', (req, res) => {
   res.json(db.getAllTasks());
+});
+
+// -------------------------------------------------------
+// PERSON 3 (Melina) -- GET /search
+// NOTE: declared BEFORE /:id — otherwise Express treats
+// "search" as a task ID and this route never works.
+// -------------------------------------------------------
+
+// GET /api/tasks/search?q=homework
+// Returns tasks where title or description matches the query
+router.get('/search', (req, res) => {
+  const { q } = req.query;
+  if (!q) {
+    return res.status(400).json({ error: 'Please provide a search term, e.g. ?q=homework' });
+  }
+  try {
+    const tasks   = db.getAllTasks();
+    const results = tasks.filter(task =>
+      task.title.toLowerCase().includes(q.toLowerCase()) ||
+      task.description.toLowerCase().includes(q.toLowerCase())
+    );
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: 'Search failed', detail: err.message });
+  }
 });
 
 // GET einen Task nach ID
