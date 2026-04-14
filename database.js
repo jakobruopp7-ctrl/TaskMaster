@@ -1,147 +1,90 @@
 // database.js
 // ---------------------------------------------------------
-// This file is the data layer of the TaskMaster app.
-// It handles everything to do with reading and writing task
-// data. Instead of a full database engine, we store tasks in
-// a local JSON file (tasks.json) on disk.
-//
-// Every other part of the app that needs to access tasks
-// imports and calls the functions exported at the bottom.
+// Datenschicht der TaskMaster-App.
+// Liest und schreibt alle Task-Daten in tasks.json.
+// Nur diese Datei greift direkt auf tasks.json zu.
+// Alle anderen Dateien rufen die hier exportierten
+// Funktionen auf.
 // ---------------------------------------------------------
+
+// PERSON 2 (Leon) -- database.js
 
 const fs   = require('fs');
 const path = require('path');
 
-// Build the full path to the data file.
-// __dirname is the folder where this file lives, so this works
-// regardless of where you run the server from.
 const DB_FILE = path.join(__dirname, 'tasks.json');
 
+// --- HILFSFUNKTIONEN (privat) ---
 
-// ---------------------------------------------------------
-// PRIVATE HELPERS
-//
-// These two functions are the foundation of everything else.
-// They aren't exported — they're only used inside this file.
-// ---------------------------------------------------------
-
-// Read and return all tasks from the JSON file.
-// If the file doesn't exist yet, we create it with an empty
-// array so the rest of the code never has to worry about it.
+// Alle Tasks aus der JSON-Datei lesen
 function readTasks() {
-  try {
-    if (!fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2));
-    }
-    const raw = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error('Could not read tasks file:', err.message);
-    return []; // Return an empty array so the app keeps working
+  if (!fs.existsSync(DB_FILE)) {
+    fs.writeFileSync(DB_FILE, JSON.stringify([])); // Erstellen, falls nicht vorhanden
   }
+  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
 }
 
-// Save the entire tasks array back to the JSON file.
-// The (null, 2) arguments add indentation so the file is
-// human-readable if you open it in a text editor.
+// Tasks-Array in die JSON-Datei schreiben
 function writeTasks(tasks) {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(tasks, null, 2));
-  } catch (err) {
-    console.error('Could not write tasks file:', err.message);
-  }
+  fs.writeFileSync(DB_FILE, JSON.stringify(tasks, null, 2));
 }
 
+// --- ÖFFENTLICHE FUNKTIONEN (exportiert) ---
 
-// ---------------------------------------------------------
-// PUBLIC FUNCTIONS
-//
-// These are the functions that taskRoutes.js calls.
-// Each one maps to one of the REST API operations.
-// ---------------------------------------------------------
-
-// Return every task in the file, sorted newest first.
+// Alle Tasks zurückgeben
 function getAllTasks() {
-  const tasks = readTasks();
-  return tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return readTasks();
 }
 
-// Find and return a single task by its id.
-// Returns null if no task with that id exists.
+// Einen Task anhand seiner ID zurückgeben
 function getTaskById(id) {
-  const tasks = readTasks();
-  return tasks.find(task => task.id === id) || null;
+  return readTasks().find(t => t.id === id) || null;
 }
 
-// Return only the tasks that belong to a specific category.
-// This is used by the sidebar filter on the frontend.
-function getTasksByCategory(category) {
-  const tasks = readTasks();
-  return tasks.filter(task => task.category === category);
-}
-
-// Create a new task from the provided data, assign it a unique id,
-// save it to the file, and return the finished task object.
+// Neuen Task erstellen und speichern
 function createTask(data) {
-  if (!data.title || data.title.trim() === '') {
-    throw new Error('Task title is required');
-  }
-
   const tasks = readTasks();
 
-  const newTask = {
-    id:          Date.now().toString(),         // Timestamp makes a simple unique ID
-    title:       data.title.trim(),
-    description: data.description ? data.description.trim() : '',
+  const task = {
+    id:          Date.now().toString(),       // Eindeutige ID aus aktuellem Zeitstempel
+    title:       data.title,
+    description: data.description || '',
     category:    data.category || 'General',
-    dueDate:     data.dueDate   || null,
-    completed:   false,
+    dueDate:     data.dueDate || null,
+    completed:   false,                       // Neue Tasks starten als nicht erledigt
     createdAt:   new Date().toISOString()
   };
 
-  tasks.push(newTask);
+  tasks.push(task);
   writeTasks(tasks);
-  return newTask;
+  return task;
 }
 
-// Find a task by id and merge the provided updates into it.
-// Returns the updated task, or null if the id wasn't found.
+// Bestehenden Task aktualisieren (Änderungen zusammenführen)
 function updateTask(id, updates) {
   const tasks = readTasks();
-  const index = tasks.findIndex(task => task.id === id);
+  const i = tasks.findIndex(t => t.id === id);
 
-  if (index === -1) return null;
+  if (i === -1) return null; // Task nicht gefunden
 
-  // Spread operator merges the old task fields with the new ones.
-  // Fields not included in 'updates' stay unchanged.
-  tasks[index] = { ...tasks[index], ...updates };
+  tasks[i] = { ...tasks[i], ...updates }; // Änderungen zusammenführen
   writeTasks(tasks);
-  return tasks[index];
+  return tasks[i];
 }
 
-// Remove a task from the array and save the file.
-// Returns true if a task was deleted, false if the id wasn't found.
+// Task löschen
 function deleteTask(id) {
   const tasks = readTasks();
-  const index = tasks.findIndex(task => task.id === id);
+  const i = tasks.findIndex(t => t.id === id);
 
-  if (index === -1) return false;
+  if (i === -1) return false; // Task nicht gefunden
 
-  tasks.splice(index, 1); // Remove exactly 1 element at this position
+  tasks.splice(i, 1); // 1 Element an dieser Position entfernen
   writeTasks(tasks);
   return true;
 }
 
+// --- EXPORTS ---
+// Nur diese Funktionen sind von außen zugänglich
 
-// ---------------------------------------------------------
-// EXPORTS
-// ---------------------------------------------------------
-
-module.exports = {
-  getAllTasks,
-  getTaskById,
-  getTasksByCategory,
-  createTask,
-  updateTask,
-  deleteTask
-};
+module.exports = { getAllTasks, getTaskById, createTask, updateTask, deleteTask };
