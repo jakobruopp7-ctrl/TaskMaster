@@ -1,19 +1,17 @@
-// app.js — TaskMaster Frontend-Logik
+// app.js — TaskMaster Frontend
 // ---------------------------------------------------------
-// Läuft im Browser. Zuständig für:
-//   - Tasks vom Server laden und als Cards anzeigen
-//   - Modal-Formular für Erstellen und Bearbeiten
-//   - HTTP-Anfragen an den Server senden (POST, PUT, DELETE)
-//   - Tasks filtern wenn Kategorie geklickt wird
+// Runs in the browser. Handles task display, forms, search,
+// category filtering, and all HTTP requests to the server.
 // ---------------------------------------------------------
 
 
-// --- ZUSTAND & ELEMENT-REFERENZEN ---
+// ============================================================
+// SHARED — State & DOM References
+// Used by all persons below
+// ============================================================
 
-// Aktuell ausgewählte Kategorie. "All" = alles anzeigen.
 let activeCategory = 'All';
 
-// DOM-Elemente einmalig cachen — schneller als wiederholtes getElementById
 const taskList      = document.getElementById('taskList');
 const taskModal     = document.getElementById('taskModal');
 const taskForm      = document.getElementById('taskForm');
@@ -23,35 +21,67 @@ const cancelBtn     = document.getElementById('cancelBtn');
 const sectionTitle  = document.getElementById('sectionTitle');
 const categoryItems = document.querySelectorAll('.category-item');
 
-// Formularfelder
 const taskIdInput       = document.getElementById('taskId');
 const taskTitleInput    = document.getElementById('taskTitle');
-const taskDescInput     = document.getElementById('taskDescription'); // genutzt von Rike (Edit-Modal) und Melina (POST)
+const taskDescInput     = document.getElementById('taskDescription');
 const taskCategoryInput = document.getElementById('taskCategory');
 const taskDueDateInput  = document.getElementById('taskDueDate');
 const searchInput       = document.getElementById('searchInput');
 const clearSearchBtn    = document.getElementById('clearSearchBtn');
 
 
-// ---------------------------------------------------------
-// PERSON 3 (Melina) -- Search
-// ---------------------------------------------------------
+// ============================================================
+// PERSON 1 — Jakob
+// Files: server.js (full file) + Modal logic + App startup
+// ============================================================
 
-// Listen for typing in the search bar
+// Open the modal with an empty form to create a new task
+function openAddModal() {
+  modalTitle.textContent = 'Add New Task';
+  taskForm.reset();
+  taskIdInput.value = ''; // empty = POST (create)
+  taskModal.classList.remove('hidden');
+}
+
+// Close the modal and clear the form
+function closeModal() {
+  taskModal.classList.add('hidden');
+  taskForm.reset();
+}
+
+// Wire up the open/close buttons
+openModalBtn.addEventListener('click', openAddModal);
+cancelBtn.addEventListener('click', closeModal);
+
+// Also close when clicking the dark backdrop behind the modal
+taskModal.addEventListener('click', (event) => {
+  if (event.target === taskModal) closeModal();
+});
+
+// Start the app: load tasks and stats as soon as the page is ready
+loadTasks();
+loadStats();
+
+
+// ============================================================
+// PERSON 3 — Melina
+// Files: GET /search route + POST route (taskRoutes.js) + Search bar
+// ============================================================
+
+// Live search — runs on every keystroke in the search field
 searchInput.addEventListener('input', async () => {
   const q = searchInput.value.trim();
 
   if (q === '') {
-    // Empty search — go back to normal task list
+    // Search cleared — go back to normal task list
     clearSearchBtn.classList.add('hidden');
     loadTasks();
     return;
   }
 
-  // Show the Clear button while searching
   clearSearchBtn.classList.remove('hidden');
 
-  // Fetch search results from GET /api/tasks/search?q=...
+  // Send search query to GET /api/tasks/search?q=...
   const response = await fetch(`/api/tasks/search?q=${encodeURIComponent(q)}`);
   const results  = await response.json();
 
@@ -59,7 +89,7 @@ searchInput.addEventListener('input', async () => {
   renderTasks(results);
 });
 
-// Clear button resets the search
+// Clear button — resets the search and shows all tasks again
 clearSearchBtn.addEventListener('click', () => {
   searchInput.value = '';
   clearSearchBtn.classList.add('hidden');
@@ -67,11 +97,13 @@ clearSearchBtn.addEventListener('click', () => {
   loadTasks();
 });
 
-// ---------------------------------------------------------
-// PERSON 4 (Claire) -- Stats laden & anzeigen
-// ---------------------------------------------------------
 
-// Fetch completion stats from GET /api/tasks/stats and update the stats bar
+// ============================================================
+// PERSON 4 — Claire
+// Files: GET /, GET /stats, GET /:id routes (taskRoutes.js) + loadStats + loadTasks
+// ============================================================
+
+// Fetch completion stats and update the stats bar
 async function loadStats() {
   const response = await fetch('/api/tasks/stats');
   const stats    = await response.json();
@@ -81,7 +113,7 @@ async function loadStats() {
 
   statsText.textContent = `✅ ${stats.completed} of ${stats.total} tasks completed  |  ⏳ ${stats.pending} pending`;
 
-  // Turn the bar green when everything is done
+  // Turn the bar green when all tasks are done
   if (stats.total > 0 && stats.completed === stats.total) {
     statsBar.classList.add('all-done');
   } else {
@@ -89,28 +121,83 @@ async function loadStats() {
   }
 }
 
-// ---------------------------------------------------------
-// PERSON 4 (Claire) -- Tasks laden
-// ---------------------------------------------------------
-
-// Alle Tasks vom Server laden, filtern und als Cards rendern
+// Fetch all tasks, apply category filter, then render them
 async function loadTasks() {
-  const response = await fetch('/api/tasks');       // GET /api/tasks
-  const tasks    = await response.json();           // JSON → JavaScript-Array
+  const response = await fetch('/api/tasks');
+  const tasks    = await response.json();
 
   const filtered = activeCategory === 'All'
     ? tasks
     : tasks.filter(t => t.category === activeCategory);
 
   renderTasks(filtered);
-  loadStats(); // Always refresh the stats bar after loading tasks
+  loadStats(); // always refresh stats after loading tasks
 }
 
-// ---------------------------------------------------------
-// PERSON 6 (Nessi) -- Tasks rendern
-// ---------------------------------------------------------
 
-// HTML-Task-Cards bauen und in die Seite einfügen
+// ============================================================
+// PERSON 5 — Rike
+// Files: PUT route (taskRoutes.js) + Edit modal + Form submit (POST & PUT)
+// ============================================================
+
+// Fetch one task by ID from the server, then open the edit modal
+async function openEditModal_fetch(id) {
+  const response = await fetch(`/api/tasks/${id}`);
+  const task     = await response.json();
+  openEditModal(task);
+}
+
+// Fill the modal form with the task's existing data for editing
+function openEditModal(task) {
+  modalTitle.textContent      = 'Edit Task';
+  taskIdInput.value           = task.id;        // ID set = PUT (update)
+  taskTitleInput.value        = task.title;
+  taskDescInput.value         = task.description || '';
+  taskCategoryInput.value     = task.category;
+  taskDueDateInput.value      = task.dueDate || '';
+  taskModal.classList.remove('hidden');
+}
+
+// Form submit — creates a new task (POST) or updates an existing one (PUT)
+taskForm.addEventListener('submit', async (e) => {
+  e.preventDefault(); // stop the browser from reloading the page
+
+  const id = taskIdInput.value; // empty = POST, set = PUT
+
+  const taskData = {
+    title:       taskTitleInput.value,
+    description: taskDescInput.value,
+    category:    taskCategoryInput.value,
+    dueDate:     taskDueDateInput.value || null,
+  };
+
+  if (id) {
+    // Task ID exists → update with PUT
+    await fetch(`/api/tasks/${id}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(taskData),
+    });
+  } else {
+    // No ID → create with POST
+    await fetch('/api/tasks', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(taskData),
+    });
+  }
+
+  closeModal();
+  loadTasks(); // refresh the list so the change is visible
+});
+
+
+// ============================================================
+// PERSON 6 — Nessi
+// Files: DELETE route (taskRoutes.js) + renderTasks + toggleComplete + deleteTask + Category filter
+// ============================================================
+
+// Build HTML task cards and inject them into the page
 function renderTasks(tasks) {
   if (tasks.length === 0) {
     taskList.innerHTML = `
@@ -120,7 +207,6 @@ function renderTasks(tasks) {
     return;
   }
 
-  // Jeden Task in einen HTML-String umwandeln und zusammenfügen
   taskList.innerHTML = tasks.map(task => `
     <div class="task-card ${task.completed ? 'completed' : ''}" data-category="${task.category}">
       <div class="task-title">${task.title}</div>
@@ -144,87 +230,7 @@ function renderTasks(tasks) {
   `).join('');
 }
 
-
-// ---------------------------------------------------------
-// PERSON 1 (Jakob) -- Modal öffnen & schließen
-// ---------------------------------------------------------
-
-// Modal mit leerem Formular für einen neuen Task öffnen
-function openAddModal() {
-  modalTitle.textContent = 'Add New Task';
-  taskForm.reset();
-  taskIdInput.value = ''; // Leer = POST (Erstellen)
-  taskModal.classList.remove('hidden');
-}
-
-// Modal schließen und Formular leeren
-function closeModal() {
-  taskModal.classList.add('hidden');
-  taskForm.reset();
-}
-
-
-// ---------------------------------------------------------
-// PERSON 5 (Rike) -- Task bearbeiten
-// ---------------------------------------------------------
-
-// Task per ID vom Server laden, dann Modal mit Daten befüllen
-async function openEditModal_fetch(id) {
-  const response = await fetch(`/api/tasks/${id}`); // GET /api/tasks/:id
-  const task     = await response.json();
-  openEditModal(task);
-}
-
-// Modal mit vorhandenen Task-Daten befüllen (Bearbeitungsmodus)
-function openEditModal(task) {
-  modalTitle.textContent      = 'Edit Task';
-  taskIdInput.value           = task.id;           // ID speichern → signalisiert PUT
-  taskTitleInput.value        = task.title;
-  taskDescInput.value         = task.description || '';
-  taskCategoryInput.value     = task.category;
-  taskDueDateInput.value      = task.dueDate || '';
-  taskModal.classList.remove('hidden');
-}
-
-// Formular absenden — ERSTELLEN (POST) oder AKTUALISIEREN (PUT)
-taskForm.addEventListener('submit', async (e) => {
-  e.preventDefault(); // Verhindert Browser-Seitenneuladen
-
-  const id = taskIdInput.value; // Leer = POST, gesetzt = PUT
-
-  const taskData = {
-    title:       taskTitleInput.value,
-    description: taskDescInput.value,
-    category:    taskCategoryInput.value,
-    dueDate:     taskDueDateInput.value || null,
-  };
-
-  if (id) {
-    // ID vorhanden → PUT (aktualisieren)
-    await fetch(`/api/tasks/${id}`, {
-      method:  'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(taskData),
-    });
-  } else {
-    // Keine ID → POST (erstellen)
-    await fetch('/api/tasks', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(taskData),
-    });
-  }
-
-  closeModal();
-  loadTasks(); // Liste neu laden damit Änderung sichtbar wird
-});
-
-
-// ---------------------------------------------------------
-// PERSON 6 (Nessi) -- Task löschen, abschließen & Kategorie-Filter
-// ---------------------------------------------------------
-
-// Erledigungsstatus eines Tasks umschalten (PUT)
+// Toggle a task's completed status using PUT
 async function toggleComplete(id, currentStatus) {
   await fetch(`/api/tasks/${id}`, {
     method:  'PUT',
@@ -234,15 +240,14 @@ async function toggleComplete(id, currentStatus) {
   loadTasks();
 }
 
-// Task nach Bestätigung löschen (DELETE)
+// Delete a task after the user confirms
 async function deleteTask(id) {
   if (!confirm('Are you sure you want to delete this task?')) return;
   await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
   loadTasks();
 }
 
-
-// Kategorie-Filter — Klick-Listener an jedes Kategorie-Element hängen
+// Category filter — attach a click listener to each sidebar category
 categoryItems.forEach(item => {
   item.addEventListener('click', () => {
     categoryItems.forEach(i => i.classList.remove('active'));
@@ -256,20 +261,3 @@ categoryItems.forEach(item => {
     loadTasks();
   });
 });
-
-
-// ---------------------------------------------------------
-// PERSON 1 (Jakob) -- Event Listener & App-Start
-// ---------------------------------------------------------
-
-openModalBtn.addEventListener('click', openAddModal);
-cancelBtn.addEventListener('click', closeModal);
-
-// Modal schließen wenn auf den dunklen Hintergrund geklickt wird
-taskModal.addEventListener('click', (event) => {
-  if (event.target === taskModal) closeModal();
-});
-
-// Tasks und Stats sofort laden wenn die Seite bereit ist
-loadTasks();
-loadStats();

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TaskMaster — Wireframes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f0f0;
+      color: #222;
+    }
+
+    .cover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #fff;
+      border-bottom: 3px solid #222;
+      page-break-after: always;
+    }
+    .cover h1 { font-size: 3rem; letter-spacing: 2px; margin-bottom: 12px; }
+    .cover p  { font-size: 1.1rem; color: #555; }
+    .cover .subtitle { font-size: 1.4rem; color: #333; margin-top: 6px; }
+
+    .page {
+      background: #fff;
+      margin: 40px auto;
+      width: 960px;
+      border: 2px solid #222;
+      page-break-inside: avoid;
+      page-break-after: always;
+    }
+
+    .page-header {
+      background: #222;
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .page-header .num   { font-size: 0.85rem; opacity: 0.7; }
+    .page-header h2     { font-size: 1.2rem; }
+    .page-header .desc  { font-size: 0.85rem; opacity: 0.8; margin-left: auto; }
+
+    .wireframe {
+      padding: 28px 32px;
+    }
+
+    /* ── Shared chrome ── */
+    .wf-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 2px solid #222;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      background: #fafafa;
+    }
+    .wf-header .app-name { font-weight: 700; font-size: 1.1rem; letter-spacing:1px; }
+    .wf-btn {
+      border: 2px solid #222;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #fff;
+      display: inline-block;
+    }
+    .wf-btn.primary { background: #222; color: #fff; }
+    .wf-btn.danger  { background: #fff; color: #222; }
+    .wf-btn.success { background: #fff; color: #222; }
+    .wf-btn.small   { padding: 4px 10px; font-size: 0.75rem; }
+
+    .wf-layout {
+      display: flex;
+      gap: 16px;
+    }
+
+    /* ── Sidebar ── */
+    .wf-sidebar {
+      width: 160px;
+      flex-shrink: 0;
+      border: 2px solid #222;
+      padding: 12px;
+    }
+    .wf-sidebar h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; color: #666; }
+    .wf-cat {
+      padding: 7px 10px;
+      margin-bottom: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .wf-cat.active { background: #222; color: #fff; border-color: #222; }
+
+    /* ── Main area ── */
+    .wf-main { flex: 1; }
+
+    .wf-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    /* ── Search bar ── */
+    .wf-search {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .wf-input {
+      flex: 1;
+      border: 2px solid #222;
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      background: #fafafa;
+    }
+
+    /* ── Stats bar ── */
+    .wf-stats {
+      border: 2px solid #222;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+    .wf-stats.done { background: #d4edda; border-color: #222; }
+
+    /* ── Task cards ── */
+    .wf-card {
+      border: 2px solid #222;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+    .wf-card.completed { background: #e8e8e8; }
+    .wf-card .card-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+    .wf-card .card-desc  { font-size: 0.78rem; color: #555; margin-bottom: 8px; }
+    .wf-card .card-meta  { font-size: 0.75rem; color: #777; margin-bottom: 8px; }
+    .wf-card .badge {
+      border: 1px solid #999;
+      padding: 2px 7px;
+      font-size: 0.7rem;
+      margin-right: 6px;
+    }
+    .wf-card .card-actions { display: flex; gap: 6px; }
+
+    /* ── Empty state ── */
+    .wf-empty {
+      border: 2px dashed #bbb;
+      padding: 40px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    /* ── Modal overlay ── */
+    .wf-modal-overlay {
+      position: relative;
+    }
+    .wf-overlay-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      z-index: 0;
+    }
+    .wf-modal {
+      position: relative;
+      z-index: 1;
+      border: 2px solid #222;
+      background: #fff;
+      padding: 24px;
+      width: 380px;
+      margin: 0 auto;
+    }
+    .wf-modal h3 { font-size: 1rem; margin-bottom: 16px; }
+    .wf-form-group { margin-bottom: 12px; }
+    .wf-form-group label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; }
+    .wf-form-group .wf-field {
+      width: 100%;
+      border: 2px solid #222;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      background: #fafafa;
+    }
+    .wf-form-group textarea.wf-field { height: 56px; resize: none; }
+    .wf-form-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+    /* ── Search results highlight ── */
+    .wf-search-label {
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+
+    /* ── Annotation callouts ── */
+    .annotations {
+      margin-top: 18px;
+      border-top: 1px dashed #bbb;
+      padding-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ann {
+      font-size: 0.76rem;
+      color: #444;
+      background: #fffbe6;
+      border: 1px solid #e0c040;
+      padding: 5px 10px;
+      border-radius: 3px;
+    }
+    .ann strong { color: #222; }
+
+    @media print {
+      body { background: #fff; }
+      .page { margin: 0; border: none; border-bottom: 2px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     COVER PAGE
+════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <h1>TaskMaster</h1>
+  <p class="subtitle">UI Wireframes — 7 Screens</p>
+  <p style="margin-top:32px; color:#888;">Digital Systems 1 — Group Project</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 1 — Main View (Tasks loaded)
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">01</span>
+    <h2>Main View — Tasks Loaded</h2>
+    <span class="desc">Default state when the app opens with existing tasks</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div class="wf-layout">
+      <div class="wf-sidebar">
+        <h3>Categories</h3>
+        <div class="wf-cat active">All Tasks</div>
+        <div class="wf-cat">Work</div>
+        <div class="wf-cat">Personal</div>
+        <div class="wf-cat">School</div>
+        <div class="wf-cat">General</div>
+      </div>
+      <div class="wf-main">
+        <div class="wf-section-title">All Tasks</div>
+        <div class="wf-search">
+          <div class="wf-input">🔍 Search tasks...</div>
+        </div>
+        <div class="wf-stats">✅ 1 of 3 tasks completed &nbsp;|&nbsp; ⏳ 2 pending</div>
+        <div class="wf-card">
+          <div class="card-title">Buy groceries</div>
+          <div class="card-desc">Milk, eggs, bread</div>
+          <div class="card-meta"><span class="badge">Personal</span> Due: 2026-04-20</div>
+          <div class="card-actions">
+            <span class="wf-btn small">Done</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+        <div class="wf-card">
+          <div class="card-title">Finish project report</div>
+          <div class="card-desc">Add charts and conclusion</div>
+          <div class="card-meta"><span class="badge">School</span> Due: 2026-04-22</div>
+          <div class="card-actions">
+            <span class="wf-btn small">Done</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+        <div class="wf-card completed">
+          <div class="card-title" style="text-decoration:line-through; color:#999;">Reply to emails</div>
+          <div class="card-meta"><span class="badge">Work</span></div>
+          <div class="card-actions">
+            <span class="wf-btn small">Undo</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Header + "+ Add Task" button</strong> — triggers the Add Task modal</div>
+      <div class="ann"><strong>Sidebar</strong> — "All Tasks" is active by default</div>
+      <div class="ann"><strong>Stats bar</strong> — shows live completion count</div>
+      <div class="ann"><strong>Task cards</strong> — Done / Edit / Delete actions per task</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 2 — Empty State
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">02</span>
+    <h2>Empty State — No Tasks Yet</h2>
+    <span class="desc">Shown when no tasks exist or a category has no tasks</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div class="wf-layout">
+      <div class="wf-sidebar">
+        <h3>Categories</h3>
+        <div class="wf-cat active">All Tasks</div>
+        <div class="wf-cat">Work</div>
+        <div class="wf-cat">Personal</div>
+        <div class="wf-cat">School</div>
+        <div class="wf-cat">General</div>
+      </div>
+      <div class="wf-main">
+        <div class="wf-section-title">All Tasks</div>
+        <div class="wf-search">
+          <div class="wf-input">🔍 Search tasks...</div>
+        </div>
+        <div class="wf-stats">✅ 0 of 0 tasks completed &nbsp;|&nbsp; ⏳ 0 pending</div>
+        <div class="wf-empty">No tasks here yet.<br>Click "+ Add Task" to get started!</div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Empty state message</strong> — shown when taskList is empty</div>
+      <div class="ann"><strong>Stats bar</strong> — shows 0 / 0</div>
+      <div class="ann"><strong>Call to action</strong> — guides user to add their first task</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 3 — Add Task Modal
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">03</span>
+    <h2>Add Task Modal</h2>
+    <span class="desc">Opened by clicking "+ Add Task" — sends a POST request</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div style="position:relative; background:#eee; padding:30px; border:2px solid #222; min-height:320px; display:flex; align-items:center; justify-content:center;">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.2);"></div>
+      <div class="wf-modal" style="position:relative;z-index:1;">
+        <h3>Add New Task</h3>
+        <div class="wf-form-group">
+          <label>Title *</label>
+          <div class="wf-field" style="color:#bbb;">Enter task title</div>
+        </div>
+        <div class="wf-form-group">
+          <label>Description</label>
+          <div class="wf-field" style="height:48px;color:#bbb;">Optional description...</div>
+        </div>
+        <div class="wf-form-group">
+          <label>Category</label>
+          <div class="wf-field">General ▾</div>
+        </div>
+        <div class="wf-form-group">
+          <label>Due Date</label>
+          <div class="wf-field" style="color:#bbb;">dd/mm/yyyy</div>
+        </div>
+        <div class="wf-form-actions">
+          <span class="wf-btn primary">Save Task</span>
+          <span class="wf-btn">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Title</strong> — required field, triggers validation</div>
+      <div class="ann"><strong>Category dropdown</strong> — matches the sidebar categories</div>
+      <div class="ann"><strong>Save Task</strong> → POST /api/tasks — creates task in tasks.json</div>
+      <div class="ann"><strong>Cancel / backdrop click</strong> → closes modal without saving</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 4 — Edit Task Modal
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">04</span>
+    <h2>Edit Task Modal</h2>
+    <span class="desc">Opened by clicking "Edit" on a card — sends a PUT request</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div style="position:relative; background:#eee; padding:30px; border:2px solid #222; min-height:320px; display:flex; align-items:center; justify-content:center;">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.2);"></div>
+      <div class="wf-modal" style="position:relative;z-index:1;">
+        <h3>Edit Task</h3>
+        <div class="wf-form-group">
+          <label>Title *</label>
+          <div class="wf-field">Buy groceries</div>
+        </div>
+        <div class="wf-form-group">
+          <label>Description</label>
+          <div class="wf-field" style="height:48px;">Milk, eggs, bread</div>
+        </div>
+        <div class="wf-form-group">
+          <label>Category</label>
+          <div class="wf-field">Personal ▾</div>
+        </div>
+        <div class="wf-form-group">
+          <label>Due Date</label>
+          <div class="wf-field">2026-04-20</div>
+        </div>
+        <div class="wf-form-actions">
+          <span class="wf-btn primary">Save Task</span>
+          <span class="wf-btn">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Fields pre-filled</strong> — fetched via GET /api/tasks/:id</div>
+      <div class="ann"><strong>Hidden task ID</strong> — tells the form to use PUT instead of POST</div>
+      <div class="ann"><strong>Save Task</strong> → PUT /api/tasks/:id — updates task in tasks.json</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 5 — Search Results
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">05</span>
+    <h2>Search Results</h2>
+    <span class="desc">Live search as the user types — calls GET /api/tasks/search?q=</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div class="wf-layout">
+      <div class="wf-sidebar">
+        <h3>Categories</h3>
+        <div class="wf-cat active">All Tasks</div>
+        <div class="wf-cat">Work</div>
+        <div class="wf-cat">Personal</div>
+        <div class="wf-cat">School</div>
+        <div class="wf-cat">General</div>
+      </div>
+      <div class="wf-main">
+        <div class="wf-section-title">Search results for "report"</div>
+        <div class="wf-search">
+          <div class="wf-input">🔍 report</div>
+          <span class="wf-btn small">Clear</span>
+        </div>
+        <div class="wf-stats">✅ 1 of 3 tasks completed &nbsp;|&nbsp; ⏳ 2 pending</div>
+        <div class="wf-search-label">1 result found</div>
+        <div class="wf-card">
+          <div class="card-title">Finish project report</div>
+          <div class="card-desc">Add charts and conclusion</div>
+          <div class="card-meta"><span class="badge">School</span> Due: 2026-04-22</div>
+          <div class="card-actions">
+            <span class="wf-btn small">Done</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Search field</strong> — triggers GET /search on every keystroke</div>
+      <div class="ann"><strong>Section title</strong> — updates to show current search query</div>
+      <div class="ann"><strong>"Clear" button</strong> — resets search and reloads all tasks</div>
+      <div class="ann"><strong>Matches title or description</strong> — case-insensitive</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 6 — Category Filter Active
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">06</span>
+    <h2>Category Filter — "Work" Selected</h2>
+    <span class="desc">Clicking a sidebar category filters tasks on the client side</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div class="wf-layout">
+      <div class="wf-sidebar">
+        <h3>Categories</h3>
+        <div class="wf-cat">All Tasks</div>
+        <div class="wf-cat active">Work</div>
+        <div class="wf-cat">Personal</div>
+        <div class="wf-cat">School</div>
+        <div class="wf-cat">General</div>
+      </div>
+      <div class="wf-main">
+        <div class="wf-section-title">Work Tasks</div>
+        <div class="wf-search">
+          <div class="wf-input">🔍 Search tasks...</div>
+        </div>
+        <div class="wf-stats">✅ 1 of 1 tasks completed &nbsp;|&nbsp; ⏳ 0 pending</div>
+        <div class="wf-card completed">
+          <div class="card-title" style="text-decoration:line-through;color:#999;">Reply to emails</div>
+          <div class="card-meta"><span class="badge">Work</span></div>
+          <div class="card-actions">
+            <span class="wf-btn small">Undo</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Active category</strong> — highlighted in sidebar</div>
+      <div class="ann"><strong>Section title</strong> — changes to "Work Tasks"</div>
+      <div class="ann"><strong>Filter</strong> — applied in the browser, no extra server call</div>
+      <div class="ann"><strong>Stats bar</strong> — reflects only the filtered tasks</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WIREFRAME 7 — All Tasks Completed
+════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="num">07</span>
+    <h2>All Tasks Completed</h2>
+    <span class="desc">Stats bar turns green when every task is marked done</span>
+  </div>
+  <div class="wireframe">
+    <div class="wf-header">
+      <span class="app-name">TaskMaster</span>
+      <span class="wf-btn primary">+ Add Task</span>
+    </div>
+    <div class="wf-layout">
+      <div class="wf-sidebar">
+        <h3>Categories</h3>
+        <div class="wf-cat active">All Tasks</div>
+        <div class="wf-cat">Work</div>
+        <div class="wf-cat">Personal</div>
+        <div class="wf-cat">School</div>
+        <div class="wf-cat">General</div>
+      </div>
+      <div class="wf-main">
+        <div class="wf-section-title">All Tasks</div>
+        <div class="wf-search">
+          <div class="wf-input">🔍 Search tasks...</div>
+        </div>
+        <div class="wf-stats done">✅ 3 of 3 tasks completed &nbsp;|&nbsp; ⏳ 0 pending</div>
+        <div class="wf-card completed">
+          <div class="card-title" style="text-decoration:line-through;color:#999;">Buy groceries</div>
+          <div class="card-meta"><span class="badge">Personal</span></div>
+          <div class="card-actions">
+            <span class="wf-btn small">Undo</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+        <div class="wf-card completed">
+          <div class="card-title" style="text-decoration:line-through;color:#999;">Finish project report</div>
+          <div class="card-meta"><span class="badge">School</span></div>
+          <div class="card-actions">
+            <span class="wf-btn small">Undo</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+        <div class="wf-card completed">
+          <div class="card-title" style="text-decoration:line-through;color:#999;">Reply to emails</div>
+          <div class="card-meta"><span class="badge">Work</span></div>
+          <div class="card-actions">
+            <span class="wf-btn small">Undo</span>
+            <span class="wf-btn small">Edit</span>
+            <span class="wf-btn small danger">Delete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotations">
+      <div class="ann"><strong>Green stats bar</strong> — "all-done" CSS class added when completed === total</div>
+      <div class="ann"><strong>Strikethrough titles</strong> — completed tasks styled differently</div>
+      <div class="ann"><strong>"Undo" button</strong> — sends PUT to set completed: false</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,40 +1,70 @@
 // taskRoutes.js
 // ---------------------------------------------------------
-// API-Routen für Tasks. Diese Datei ist der Verkehrskontrolleur
-// zwischen HTTP-Anfragen und den Datenbankfunktionen.
+// API routes for tasks. Connects HTTP requests to the
+// database functions in database.js.
 //
-// REST API Endpunkte:
-//   GET    /api/tasks           → alle Tasks zurückgeben      (Person 4 - Claire)
-//   GET    /api/tasks/stats     → Erledigungsstatistik        (Person 4 - Claire)
-//   GET    /api/tasks/search    → Tasks nach Begriff suchen   (Person 3 - Melina)
-//   GET    /api/tasks/:id       → einen Task zurückgeben      (Person 4 - Claire)
-//   POST   /api/tasks           → neuen Task erstellen        (Person 3 - Melina)
-//   PUT    /api/tasks/:id       → Task aktualisieren          (Person 5 - Rike)
-//   DELETE /api/tasks/:id       → Task löschen                (Person 6 - Nessi)
+// REST API endpoints:
+//   GET    /api/tasks/search    → search tasks by keyword  (Person 3 - Melina)
+//   POST   /api/tasks           → create a new task        (Person 3 - Melina)
+//   GET    /api/tasks           → get all tasks            (Person 4 - Claire)
+//   GET    /api/tasks/stats     → get completion stats     (Person 4 - Claire)
+//   GET    /api/tasks/:id       → get one task by ID       (Person 4 - Claire)
+//   PUT    /api/tasks/:id       → update a task            (Person 5 - Rike)
+//   DELETE /api/tasks/:id       → delete a task            (Person 6 - Nessi)
 // ---------------------------------------------------------
 
 const express = require('express');
 const router  = express.Router();
 const db      = require('./database');
 
-// -------------------------------------------------------
-// PERSON 4 (Claire) -- GET-Routen (alle Tasks, stats, nach ID)
-// NOTE: /stats and /search must be declared BEFORE /:id —
-// otherwise Express treats them as task IDs and the routes
-// never work.
-// -------------------------------------------------------
 
-// GET alle Tasks
+// ============================================================
+// PERSON 3 — Melina
+// GET /search + POST /
+// Note: /search is declared before /:id so Express does not
+// treat the word "search" as a task ID.
+// ============================================================
+
+// GET /api/tasks/search?q=homework
+// Returns all tasks where title or description matches the query
+router.get('/search', (req, res) => {
+  const { q } = req.query;
+  if (!q) {
+    return res.status(400).json({ error: 'Please provide a search term, e.g. ?q=homework' });
+  }
+  try {
+    const tasks   = db.getAllTasks();
+    const results = tasks.filter(task =>
+      task.title.toLowerCase().includes(q.toLowerCase()) ||
+      task.description.toLowerCase().includes(q.toLowerCase())
+    );
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: 'Search failed', detail: err.message });
+  }
+});
+
+// POST /api/tasks — create a new task
+router.post('/', (req, res) => {
+  const { title, description, category, dueDate } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title is required' });
+  res.status(201).json(db.createTask({ title, description, category, dueDate }));
+});
+
+
+// ============================================================
+// PERSON 4 — Claire
+// GET / + GET /stats + GET /:id
+// Note: /stats is declared before /:id so Express does not
+// treat the word "stats" as a task ID.
+// ============================================================
+
+// GET /api/tasks — return all tasks
 router.get('/', (req, res) => {
   res.json(db.getAllTasks());
 });
 
-// -------------------------------------------------------
-// PERSON 4 (Claire) -- GET /stats (continued)
-
-// GET /api/tasks/stats
-// Returns total, completed, and pending task counts
-// Also breaks down completed count per category
+// GET /api/tasks/stats — return total, completed, and pending counts
 router.get('/stats', (req, res) => {
   const tasks     = db.getAllTasks();
   const completed = tasks.filter(t => t.completed);
@@ -58,74 +88,38 @@ router.get('/stats', (req, res) => {
   });
 });
 
-// -------------------------------------------------------
-// PERSON 3 (Melina) -- GET /search
-// NOTE: declared BEFORE /:id — otherwise Express treats
-// "search" as a task ID and this route never works.
-// -------------------------------------------------------
-
-// GET /api/tasks/search?q=homework
-// Returns tasks where title or description matches the query
-router.get('/search', (req, res) => {
-  const { q } = req.query;
-  if (!q) {
-    return res.status(400).json({ error: 'Please provide a search term, e.g. ?q=homework' });
-  }
-  try {
-    const tasks   = db.getAllTasks();
-    const results = tasks.filter(task =>
-      task.title.toLowerCase().includes(q.toLowerCase()) ||
-      task.description.toLowerCase().includes(q.toLowerCase())
-    );
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: 'Search failed', detail: err.message });
-  }
-});
-
-// -------------------------------------------------------
-// PERSON 4 (Claire) -- GET /:id (continued)
-// NOTE: must be declared AFTER /stats and /search
-// -------------------------------------------------------
-
-// GET einen Task nach ID
+// GET /api/tasks/:id — return one task by its ID
 router.get('/:id', (req, res) => {
   const task = db.getTaskById(req.params.id);
-  if (!task) return res.status(404).json({ error: 'Task nicht gefunden' });
+  if (!task) return res.status(404).json({ error: 'Task not found' });
   res.json(task);
 });
 
-// -------------------------------------------------------
-// PERSON 3 (Melina) -- POST-Route
-// -------------------------------------------------------
 
-// POST -- neuen Task erstellen
-router.post('/', (req, res) => {
-  const { title, description, category, dueDate } = req.body;
-  if (!title) return res.status(400).json({ error: 'Titel ist erforderlich' });
-  res.status(201).json(db.createTask({ title, description, category, dueDate }));
-});
+// ============================================================
+// PERSON 5 — Rike
+// PUT /:id — update a task (used for editing and marking done)
+// ============================================================
 
-// -------------------------------------------------------
-// PERSON 5 (Rike) -- PUT-Route
-// -------------------------------------------------------
-
-// PUT -- Task aktualisieren
+// PUT /api/tasks/:id — update fields on an existing task
 router.put('/:id', (req, res) => {
   const updated = db.updateTask(req.params.id, req.body);
-  if (!updated) return res.status(404).json({ error: 'Task nicht gefunden' });
+  if (!updated) return res.status(404).json({ error: 'Task not found' });
   res.json(updated);
 });
 
-// -------------------------------------------------------
-// PERSON 6 (Nessi) -- DELETE-Route
-// -------------------------------------------------------
 
-// DELETE -- Task löschen
+// ============================================================
+// PERSON 6 — Nessi
+// DELETE /:id — remove a task permanently
+// ============================================================
+
+// DELETE /api/tasks/:id — delete one task by its ID
 router.delete('/:id', (req, res) => {
   const ok = db.deleteTask(req.params.id);
-  if (!ok) return res.status(404).json({ error: 'Task nicht gefunden' });
-  res.json({ message: 'Task erfolgreich gelöscht' });
+  if (!ok) return res.status(404).json({ error: 'Task not found' });
+  res.json({ message: 'Task deleted successfully' });
 });
+
 
 module.exports = router;
