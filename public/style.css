@@ -103,7 +103,26 @@ body {
   font-size: 1.3rem;
   font-weight: 600;
   color: #1e3a5f;
+  margin-bottom: 12px;
+}
+
+/* Stats bar showing completed / total tasks */
+.stats-bar {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 16px;
   margin-bottom: 18px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e3a5f;
+}
+
+/* Green when all tasks are done */
+.stats-bar.all-done {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
 }
 
 /* Responsive grid: columns are added/removed automatically

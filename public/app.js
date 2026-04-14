@@ -32,6 +32,28 @@ const taskDueDateInput  = document.getElementById('taskDueDate');
 
 
 // ---------------------------------------------------------
+// PERSON 5 (Rike) -- Stats laden & anzeigen
+// ---------------------------------------------------------
+
+// Fetch completion stats from GET /api/tasks/stats and update the stats bar
+async function loadStats() {
+  const response = await fetch('/api/tasks/stats');
+  const stats    = await response.json();
+
+  const statsBar  = document.getElementById('statsBar');
+  const statsText = document.getElementById('statsText');
+
+  statsText.textContent = `✅ ${stats.completed} of ${stats.total} tasks completed  |  ⏳ ${stats.pending} pending`;
+
+  // Turn the bar green when everything is done
+  if (stats.total > 0 && stats.completed === stats.total) {
+    statsBar.classList.add('all-done');
+  } else {
+    statsBar.classList.remove('all-done');
+  }
+}
+
+// ---------------------------------------------------------
 // PERSON 4 (Claire) -- Tasks laden & anzeigen
 // ---------------------------------------------------------
 
@@ -45,6 +67,7 @@ async function loadTasks() {
     : tasks.filter(t => t.category === activeCategory);
 
   renderTasks(filtered);
+  loadStats(); // Always refresh the stats bar after loading tasks
 }
 
 // HTML-Task-Cards bauen und in die Seite einfügen
@@ -210,5 +233,6 @@ taskModal.addEventListener('click', (event) => {
 
 // --- ERSTMALIGES LADEN ---
 
-// Tasks sofort laden wenn die Seite bereit ist
+// Tasks und Stats sofort laden wenn die Seite bereit ist
 loadTasks();
+loadStats();
