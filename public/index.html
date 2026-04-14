@@ -1,49 +1,48 @@
 <!DOCTYPE html>
 <!--
-  index.html — TaskMaster Frontend-Struktur
+  index.html — TaskMaster Frontend Structure
   ------------------------------------------
-  Diese Datei definiert die sichtbare Struktur der gesamten App.
-  Sie ist das Skelett: jedes Panel, Formular, jede Schaltfläche
-  und Liste auf dem Bildschirm ist hier deklariert.
+  This file defines the visible structure of the entire app.
+  It is the skeleton: every panel, form, button, and list
+  on the screen is declared here.
 
-  style.css  steuert das AUSSEHEN.
-  app.js     steuert das VERHALTEN.
+  style.css  controls the APPEARANCE.
+  app.js     controls the BEHAVIOUR.
 -->
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
 
-  <!-- Sorgt dafür, dass das Layout auf Mobilgeräten korrekt skaliert -->
+  <!-- Makes the layout scale correctly on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>TaskMaster</title>
 
-  <!-- Verknüpfung mit dem Stylesheet -->
+  <!-- Link to the stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
   <!-- ===================== HEADER ===================== -->
-  <!-- Obere Leiste: App-Name links, "+ Task hinzufügen"-Button rechts.
-       Die Button-ID wird von app.js verwendet, um einen Klick-Event
-       zu registrieren. -->
+  <!-- Top bar: app name on the left, "+ Add Task" button on the right.
+       The button ID is used by app.js to register a click event. -->
   <header class="app-header">
     <h1 class="app-title">TaskMaster</h1>
     <button id="openModalBtn" class="btn btn-primary">+ Add Task</button>
   </header>
 
 
-  <!-- ===================== HAUPTLAYOUT ===================== -->
-  <!-- Zweispaltiges Layout: Sidebar links, Task-Cards rechts.
-       Flexbox in style.css übernimmt die Nebeneinanderpositionierung. -->
+  <!-- ===================== MAIN LAYOUT ===================== -->
+  <!-- Two-column layout: sidebar on the left, task cards on the right.
+       Flexbox in style.css handles the side-by-side positioning. -->
   <main class="app-layout">
 
-    <!-- --- SIDEBAR: Kategorie-Filter --- -->
-    <!-- Beim Klicken auf ein Kategorie-Element wird ein Filter in app.js
-         ausgelöst. Das data-category-Attribut teilt dem Skript mit,
-         welche Kategorie ausgewählt wurde. -->
+    <!-- --- SIDEBAR: Category Filter --- -->
+    <!-- Clicking a category item triggers a filter in app.js.
+         The data-category attribute tells the script which
+         category was selected. -->
     <aside class="sidebar">
       <h2 class="sidebar-title">Categories</h2>
       <ul id="categoryList" class="category-list">
@@ -55,9 +54,9 @@
       </ul>
     </aside>
 
-    <!-- --- TASK-LISTENBEREICH --- -->
-    <!-- Die h2-Überschrift aktualisiert sich bei Kategorienwechsel.
-         Das div#taskList ist der Container, in den app.js Task-Cards einfügt. -->
+    <!-- --- TASK LIST AREA --- -->
+    <!-- The h2 heading updates when the category changes.
+         The div#taskList is the container where app.js inserts task cards. -->
     <section class="task-section">
       <h2 id="sectionTitle" class="section-title">All Tasks</h2>
 
@@ -73,42 +72,41 @@
       </div>
 
       <div id="taskList" class="task-list">
-        <!-- Task-Cards werden hier dynamisch von app.js eingefügt -->
+        <!-- Task cards are inserted here dynamically by app.js -->
       </div>
     </section>
 
   </main>
 
 
-  <!-- ===================== MODAL (POP-UP-FORMULAR) ===================== -->
-  <!-- Standardmäßig ausgeblendet — app.js entfernt die "hidden"-Klasse,
-       um es anzuzeigen. Das Klicken auf den dunklen Hintergrund
-       schließt es ebenfalls. -->
+  <!-- ===================== MODAL (POP-UP FORM) ===================== -->
+  <!-- Hidden by default — app.js removes the "hidden" class to show it.
+       Clicking the dark backdrop also closes it. -->
   <div id="taskModal" class="modal hidden">
     <div class="modal-content">
 
-      <!-- Titel wechselt zwischen "Neuen Task hinzufügen" und "Task bearbeiten" -->
+      <!-- Title switches between "Add New Task" and "Edit Task" -->
       <h2 id="modalTitle">Add New Task</h2>
 
       <form id="taskForm">
 
-        <!-- Verstecktes Feld: speichert die ID des bearbeiteten Tasks.
-             Leer beim Erstellen eines neuen Tasks. -->
+        <!-- Hidden field: stores the ID of the task being edited.
+             Empty when creating a new task. -->
         <input type="hidden" id="taskId">
 
-        <!-- Titel ist das einzige Pflichtfeld -->
+        <!-- Title is the only required field -->
         <div class="form-group">
           <label for="taskTitle">Title *</label>
           <input type="text" id="taskTitle" placeholder="Enter task title" required>
         </div>
 
-        <!-- Beschreibung ist optional -->
+        <!-- Description is optional -->
         <div class="form-group">
           <label for="taskDescription">Description</label>
           <textarea id="taskDescription" rows="3" placeholder="Optional description..."></textarea>
         </div>
 
-        <!-- Kategorie-Dropdown — Optionen entsprechen dem Sidebar-Filter -->
+        <!-- Category dropdown — options match the sidebar filter -->
         <div class="form-group">
           <label for="taskCategory">Category</label>
           <select id="taskCategory">
@@ -119,13 +117,13 @@
           </select>
         </div>
 
-        <!-- Datum-Eingabe — Browser zeigt einen nativen Datepicker -->
+        <!-- Date input — browser shows a native date picker -->
         <div class="form-group">
           <label for="taskDueDate">Due Date</label>
           <input type="date" id="taskDueDate">
         </div>
 
-        <!-- Formular-Buttons: Speichern sendet ab, Abbrechen schließt das Modal -->
+        <!-- Form buttons: Save submits, Cancel closes the modal -->
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Save Task</button>
           <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
@@ -136,8 +134,8 @@
   </div>
 
 
-  <!-- app.js wird zuletzt geladen, damit alle HTML-Elemente
-       oben bereits geladen sind, wenn das Skript sie sucht. -->
+  <!-- app.js is loaded last so all HTML elements above
+       are already in the page when the script looks for them. -->
   <script src="app.js"></script>
 
 </body>

@@ -1,35 +1,35 @@
 // server.js
 // ---------------------------------------------------------
-// Einstiegspunkt der TaskMaster-Anwendung.
-// Startet den Express-Server, richtet Middleware ein und
-// verbindet die API-Routen.
+// Entry point of the TaskMaster application.
+// Starts the Express server, sets up middleware, and
+// connects the API routes.
 //
-// Server starten mit:  node server.js
-// Dann öffnen:         http://localhost:3000
+// Start the server with:  node server.js
+// Then open:              http://localhost:3000
 // ---------------------------------------------------------
 
 // PERSON 1 (Jakob) -- server.js
 
-const express = require('express'); // Express-Framework importieren
-const path    = require('path');    // Pfad-Hilfsprogramm (eingebaut)
-const taskRoutes = require('./taskRoutes'); // Routen importieren
+const express    = require('express');          // Express framework
+const path       = require('path');             // Built-in path utility
+const taskRoutes = require('./taskRoutes');      // Import task routes
 
-const app  = express(); // Express-App erstellen
-const PORT = 3000;      // Port-Nummer zum Abhören
+const app  = express();   // Create the Express app
+const PORT = 3000;        // Port the server listens on
 
 // --- MIDDLEWARE ---
-// Middleware läuft bei jeder Anfrage, bevor sie eine Route erreicht
+// Middleware runs on every request before it reaches a route
 
-app.use(express.json());                                        // JSON-Anfrage-Bodies lesen
-app.use(express.urlencoded({ extended: true }));                // Formulardaten lesen
-app.use(express.static(path.join(__dirname, 'public')));        // HTML/CSS/JS bereitstellen
+app.use(express.json());                                      // Read JSON request bodies
+app.use(express.urlencoded({ extended: true }));              // Read form data
+app.use(express.static(path.join(__dirname, 'public')));      // Serve HTML/CSS/JS files
 
-// --- ROUTEN ---
+// --- ROUTES ---
 
-app.use('/api/tasks', taskRoutes); // Task-Routen unter /api/tasks einbinden
+app.use('/api/tasks', taskRoutes); // Mount task routes at /api/tasks
 
-// --- SERVER STARTEN ---
+// --- START SERVER ---
 
 app.listen(PORT, () => {
-  console.log(`TaskMaster läuft unter http://localhost:${PORT}`);
+  console.log(`TaskMaster is running at http://localhost:${PORT}`);
 });
