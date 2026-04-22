@@ -26,6 +26,46 @@ app.use(express.static(path.join(__dirname, 'public')));      // Serve HTML/CSS/
 
 // --- ROUTES ---
 
+// PERSON 1 (Jakob) — GET /api/export
+// Exports all tasks as a CSV file and logs each export to export-log.json.
+// Round trip: Export button clicked → GET /api/export → server builds CSV →
+//             export is recorded in export-log.json → CSV downloads to browser.
+const fs  = require('fs');
+const db  = require('./database');
+const EXPORT_LOG = path.join(__dirname, 'export-log.json');
+
+app.get('/api/export', (req, res) => {
+  const tasks = db.getAllTasks();
+
+  // Build CSV rows from the task list
+  const header = 'Title,Description,Category,Due Date,Completed';
+  const rows   = tasks.map(t =>
+    [`"${t.title}"`, `"${t.description || ''}"`, `"${t.category}"`,
+     `"${t.dueDate || ''}"`, t.completed ? 'Yes' : 'No'].join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+
+  // Write a new entry to export-log.json so the export is visibly recorded
+  const log = fs.existsSync(EXPORT_LOG)
+    ? JSON.parse(fs.readFileSync(EXPORT_LOG, 'utf8'))
+    : [];
+  log.push({
+    exportedAt: new Date().toISOString(),
+    taskCount:  tasks.length,
+    tasks:      tasks.map(t => ({
+      title:     t.title,
+      category:  t.category,
+      dueDate:   t.dueDate || 'none',
+      completed: t.completed ? 'Yes' : 'No'
+    }))
+  });
+  fs.writeFileSync(EXPORT_LOG, JSON.stringify(log, null, 2));
+
+  res.setHeader('Content-Disposition', 'attachment; filename="tasks.csv"');
+  res.setHeader('Content-Type', 'text/csv');
+  res.send(csv);
+});
+
 app.use('/api/tasks', taskRoutes); // Mount task routes at /api/tasks
 
 // --- START SERVER ---

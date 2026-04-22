@@ -28,12 +28,29 @@ const taskCategoryInput = document.getElementById('taskCategory');
 const taskDueDateInput  = document.getElementById('taskDueDate');
 const searchInput       = document.getElementById('searchInput');
 const clearSearchBtn    = document.getElementById('clearSearchBtn');
+const completeAllBtn    = document.getElementById('completeAllBtn');
+const exportBtn         = document.getElementById('exportBtn');
 
 
 // ============================================================
 // PERSON 1 — Jakob
 // Files: server.js (full file) + Modal logic + App startup
 // ============================================================
+
+// Round trip: Export button → GET /api/export → server.js builds CSV and writes
+//             export-log.json → CSV downloads to browser.
+exportBtn.addEventListener('click', async () => {
+  const response = await fetch('/api/export');
+  const csv      = await response.text();
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'tasks.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
 // Open the modal with an empty form to create a new task
 function openAddModal() {
@@ -61,6 +78,21 @@ taskModal.addEventListener('click', (event) => {
 // Start the app: load tasks and stats as soon as the page is ready
 loadTasks();
 loadStats();
+
+
+// ============================================================
+// PERSON 2 — Leon
+// Files: completeAll() in database.js + PATCH /complete-all route in taskRoutes.js
+// Round trip: "Mark All Done" click → PATCH /api/tasks/complete-all →
+//             taskRoutes.js → database.js completeAll() → every task in
+//             tasks.json gets completed: true → task list re-renders.
+// ============================================================
+
+completeAllBtn.addEventListener('click', async () => {
+  if (!confirm('Mark all tasks as done?')) return;
+  await fetch('/api/tasks/complete-all', { method: 'PATCH' });
+  loadTasks();
+});
 
 
 // ============================================================
@@ -230,7 +262,7 @@ function renderTasks(tasks) {
   `).join('');
 }
 
-// Toggle a task's completed status using PUT
+// Toggle a single task's completed status using PUT (Rike's route)
 async function toggleComplete(id, currentStatus) {
   await fetch(`/api/tasks/${id}`, {
     method:  'PUT',

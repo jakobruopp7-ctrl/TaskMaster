@@ -16,6 +16,25 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('./database');
+const fs      = require('fs');
+const path    = require('path');
+
+const OVERDUE_FILE = path.join(__dirname, 'overdue-tasks.json');
+
+
+// ============================================================
+// PERSON 2 — Leon
+// PATCH /complete-all — mark every task as completed at once
+// Round trip: user clicks "Mark All Done" → app.js fetches PATCH /complete-all →
+//             taskRoutes calls db.completeAll() → database.js sets every task's
+//             completed flag to true and writes tasks.json → updated list returned.
+// ============================================================
+
+// PATCH /api/tasks/complete-all — set completed: true on all tasks
+router.patch('/complete-all', (req, res) => {
+  const tasks = db.completeAll();
+  res.json(tasks);
+});
 
 
 // ============================================================
@@ -65,6 +84,9 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/tasks/stats — return total, completed, and pending counts
+// Also writes overdue-tasks.json with any tasks past their due date.
+// Round trip: page loads → GET /api/tasks/stats → stats calculated →
+//             overdue-tasks.json updated → stats returned to browser.
 router.get('/stats', (req, res) => {
   const tasks     = db.getAllTasks();
   const completed = tasks.filter(t => t.completed);
@@ -79,6 +101,11 @@ router.get('/stats', (req, res) => {
     byCategory[task.category].total++;
     if (task.completed) byCategory[task.category].completed++;
   });
+
+  // Write overdue-tasks.json — tasks with a due date in the past that are not completed
+  const today   = new Date().toISOString().split('T')[0];
+  const overdue = tasks.filter(t => t.dueDate && t.dueDate < today && !t.completed);
+  fs.writeFileSync(OVERDUE_FILE, JSON.stringify(overdue, null, 2));
 
   res.json({
     total:     tasks.length,

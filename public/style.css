@@ -42,6 +42,29 @@ body {
 }
 
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.export-msg {
+  font-size: 0.85rem;
+  color: #22c55e;
+  font-weight: 600;
+}
+
+/* Leon's Mark All Done button sits beside the section title */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-header .section-title { margin-bottom: 0; }
+
+
 /* --- MAIN LAYOUT --- */
 /* Flexbox keeps the sidebar and task area side by side */
 

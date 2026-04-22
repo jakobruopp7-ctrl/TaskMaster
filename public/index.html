@@ -30,7 +30,12 @@
        The button ID is used by app.js to register a click event. -->
   <header class="app-header">
     <h1 class="app-title">TaskMaster</h1>
-    <button id="openModalBtn" class="btn btn-primary">+ Add Task</button>
+    <div class="header-actions">
+      <!-- Jakob's export button — links directly to GET /api/tasks/export (server.js).
+           The browser downloads the response as tasks.json. -->
+      <button id="exportBtn" class="btn btn-secondary">Export Tasks</button>
+      <button id="openModalBtn" class="btn btn-primary">+ Add Task</button>
+    </div>
   </header>
 
 
@@ -58,7 +63,11 @@
     <!-- The h2 heading updates when the category changes.
          The div#taskList is the container where app.js inserts task cards. -->
     <section class="task-section">
-      <h2 id="sectionTitle" class="section-title">All Tasks</h2>
+      <div class="section-header">
+        <h2 id="sectionTitle" class="section-title">All Tasks</h2>
+        <!-- Leon's button — calls PATCH /api/tasks/complete-all (taskRoutes → database.js) -->
+        <button id="completeAllBtn" class="btn btn-success">Mark All Done</button>
+      </div>
 
       <!-- Search bar — Melina's feature -->
       <div class="search-bar">

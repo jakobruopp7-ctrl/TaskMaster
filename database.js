@@ -83,7 +83,16 @@ function deleteTask(id) {
   return true;
 }
 
+// Mark every task as completed
+// PERSON 2 (Leon) — called by PATCH /api/tasks/complete-all in taskRoutes.js
+function completeAll() {
+  const tasks = readTasks();
+  tasks.forEach(t => { t.completed = true; });
+  writeTasks(tasks);
+  return tasks;
+}
+
 // --- EXPORTS ---
 // Only these functions are accessible from outside this file
 
-module.exports = { getAllTasks, getTaskById, createTask, updateTask, deleteTask };
+module.exports = { getAllTasks, getTaskById, createTask, updateTask, deleteTask, completeAll };
